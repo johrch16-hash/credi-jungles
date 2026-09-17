@@ -50,7 +50,7 @@ builder.Services.AddRateLimiter(options =>
 });
 
 
-// --- Base de datos (Soporte dinámico para SQLite / PostgreSQL) ---
+// --- Base de datos (Soporte dinÃƒÂ¡mico para SQLite / PostgreSQL) ---
 var defaultConn = Environment.GetEnvironmentVariable("DATABASE_URL");
 if (string.IsNullOrEmpty(defaultConn))
 {
@@ -79,7 +79,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // --- Identity ---
 builder.Services.AddIdentity<Usuario, Rol>(options =>
 {
-    // Política de contraseñas
+    // PolÃƒÂ­tica de contraseÃƒÂ±as
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
     options.Password.RequireUppercase = true;
@@ -98,7 +98,7 @@ builder.Services.AddIdentity<Usuario, Rol>(options =>
 .AddDefaultTokenProviders()
 .AddPasswordValidator<PasswordHistoryValidator<Usuario>>();
 
-// --- Cookie de autenticación ---
+// --- Cookie de autenticaciÃƒÂ³n ---
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
@@ -110,7 +110,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
-// --- Servicios de la aplicación ---
+// --- Servicios de la aplicaciÃƒÂ³n ---
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddSingleton<ICifradoService, CifradoService>();
 builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();
@@ -143,7 +143,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<ClienteCreateDtoValidator>(
 
 var app = builder.Build();
 
-// --- Middleware Diagnóstico de Excepciones Globales ---
+// --- Middleware DiagnÃƒÂ³stico de Excepciones Globales ---
 app.Use(async (context, next) =>
 {
     try
@@ -152,7 +152,7 @@ app.Use(async (context, next) =>
     }
     catch (Exception ex)
     {
-        // Si es un error de criptografía por TempData corrupto (Render ephemeral keys), limpiamos la cookie y redirigimos
+        // Si es un error de criptografÃƒÂ­a por TempData corrupto (Render ephemeral keys), limpiamos la cookie y redirigimos
         if (ex is System.Security.Cryptography.CryptographicException || 
             (ex.InnerException != null && ex.InnerException is System.Security.Cryptography.CryptographicException))
         {
@@ -170,14 +170,14 @@ app.Use(async (context, next) =>
             var innerTrace = ex.InnerException != null ? ex.InnerException.StackTrace : "";
             await context.Response.WriteAsync($@"<!DOCTYPE html>
 <html>
-<head><title>Error 500 - Diagnóstico</title></head>
+<head><title>Error 500 - DiagnÃƒÂ³stico</title></head>
 <body style='font-family: sans-serif; padding: 30px; background: #fff5f5; color: #800;'>
     <h1 style='color: #c00;'>Error 500 de Servidor</h1>
     <h3>Mensaje: {System.Net.WebUtility.HtmlEncode(ex.Message)}</h3>
-    <p><b>Tipo Excepción:</b> {ex.GetType().FullName}</p>
+    <p><b>Tipo ExcepciÃƒÂ³n:</b> {ex.GetType().FullName}</p>
     <h4>StackTrace Principal:</h4>
     <pre style='background: #fff; padding: 15px; border: 1px solid #f99; border-radius: 8px; overflow: auto; max-height: 300px;'>{System.Net.WebUtility.HtmlEncode(ex.StackTrace ?? "")}</pre>
-    <h4>Excepción Interna (InnerException):</h4>
+    <h4>ExcepciÃƒÂ³n Interna (InnerException):</h4>
     <p><b>Mensaje:</b> {System.Net.WebUtility.HtmlEncode(innerMsg)}</p>
     <pre style='background: #fff; padding: 15px; border: 1px solid #f99; border-radius: 8px; overflow: auto; max-height: 300px;'>{System.Net.WebUtility.HtmlEncode(innerTrace ?? "")}</pre>
 </body>
@@ -196,7 +196,7 @@ if (!app.Environment.IsDevelopment())
 app.UseStaticFiles();
 app.UseRateLimiter();
 
-// --- Localización (Fuerza cultura en-US para que los decimales con . funcionen sin error) ---
+// --- LocalizaciÃƒÂ³n (Fuerza cultura en-US para que los decimales con . funcionen sin error) ---
 var defaultCulture = new CultureInfo("en-US");
 var localizationOptions = new RequestLocalizationOptions
 {
@@ -206,7 +206,7 @@ var localizationOptions = new RequestLocalizationOptions
 };
 app.UseRequestLocalization(localizationOptions);
 
-// --- Middleware para prevenir errores de TempData con llaves efímeras (Render) ---
+// --- Middleware para prevenir errores de TempData con llaves efÃƒÂ­meras (Render) ---
 app.Use(async (context, next) =>
 {
     var tempDataFactory = context.RequestServices.GetService<Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory>();
@@ -249,7 +249,7 @@ app.MapControllerRoute(
 // --- Hangfire Dashboard & Jobs ---
 app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {
-    // Opcional: configurar autorización para Hangfire Dashboard aquí
+    // Opcional: configurar autorizaciÃƒÂ³n para Hangfire Dashboard aquÃƒÂ­
 });
 
 RecurringJob.AddOrUpdate<INotificacionService>(
@@ -277,15 +277,23 @@ using (var scope = app.Services.CreateScope())
     {
         try
         {
-            if (!await context.Database.CanConnectAsync())
+            bool needTables = false;
+            try
             {
-                Console.WriteLine("[DB Debug] Cannot connect to PostgreSQL database. Running migrations/creation...");
+                await context.Database.ExecuteSqlRawAsync("SELECT 1 FROM \"Clientes\" LIMIT 1;");
+            }
+            catch
+            {
+                needTables = true;
+            }
+
+            if (needTables)
+            {
+                Console.WriteLine("[DB Debug] Creating all tables from EF Core...");
                 string script = context.Database.GenerateCreateScript();
                 await context.Database.ExecuteSqlRawAsync(script);
+                Console.WriteLine("[DB Debug] Tables created successfully!");
             }
-            else
-            {
-                try { await context.Database.EnsureCreatedAsync(); } catch (Exception ex) { Console.WriteLine("[DB Debug] EnsureCreated: " + ex.Message); }
                 // Asegurar tablas base en PostgreSQL
                 try
                 {
@@ -359,7 +367,6 @@ using (var scope = app.Services.CreateScope())
                         ALTER TABLE ""SoporteTickets"" 
                         ADD COLUMN IF NOT EXISTS ""Estado"" VARCHAR(30) NOT NULL DEFAULT 'Pendiente';");
                 } catch (Exception ex) { Console.WriteLine($"[DB Debug] SoporteTickets Estado alter info: {ex.Message}"); }
-            }
         }
         catch (Exception ex)
         {
@@ -443,7 +450,7 @@ using (var scope = app.Services.CreateScope())
         } catch (Exception ex) { Console.WriteLine($"[DB Debug] SoporteTickets Estado SQLite: {ex.Message}"); }
     }
 
-    // ── Migración Universal: Agregar columnas de permisos y teléfono al usuario ──
+    // Ã¢â€â‚¬Ã¢â€â‚¬ MigraciÃƒÂ³n Universal: Agregar columnas de permisos y telÃƒÂ©fono al usuario Ã¢â€â‚¬Ã¢â€â‚¬
     try
     {
         await context.Database.ExecuteSqlRawAsync(
@@ -451,7 +458,7 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"[DB Debug] Columna TipoCredito ya existe o falló: {ex.Message}");
+        Console.WriteLine($"[DB Debug] Columna TipoCredito ya existe o fallÃƒÂ³: {ex.Message}");
     }
 
     try
@@ -462,7 +469,7 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"[DB Debug] Columna FechaSorteo ya existe o falló: {ex.Message}");
+        Console.WriteLine($"[DB Debug] Columna FechaSorteo ya existe o fallÃƒÂ³: {ex.Message}");
     }
 
     try
@@ -473,7 +480,7 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"[DB Debug] Columna Cancelado ya existe o falló: {ex.Message}");
+        Console.WriteLine($"[DB Debug] Columna Cancelado ya existe o fallÃƒÂ³: {ex.Message}");
     }
 
     var columnasMigracion = new Dictionary<string, string>
@@ -503,14 +510,14 @@ using (var scope = app.Services.CreateScope())
                 tipoColumna = tipoColumna.Replace("BOOLEAN", "INTEGER").Replace("TRUE", "1");
             }
 
-            // Usar comillas dobles para respetar mayúsculas en PostgreSQL ("Usuarios" y nombres de columnas)
+            // Usar comillas dobles para respetar mayÃƒÂºsculas en PostgreSQL ("Usuarios" y nombres de columnas)
             await context.Database.ExecuteSqlRawAsync(
                 $"ALTER TABLE \"Usuarios\" ADD COLUMN \"{col.Key}\" {tipoColumna};");
         }
         catch (Exception ex)
         {
             // Ignorar error si la columna ya existe
-            Console.WriteLine($"[DB Debug] Columna {col.Key} ya existe o falló: {ex.Message}");
+            Console.WriteLine($"[DB Debug] Columna {col.Key} ya existe o fallÃƒÂ³: {ex.Message}");
         }
     }
 
