@@ -545,20 +545,40 @@ using (var scope = app.Services.CreateScope())
             await userManager.AddToRoleAsync(admin, "Master");
         }
     }
+
+    // Crear o asegurar usuario Johnny
+    var johnny = await userManager.FindByNameAsync("Johnny");
+    if (johnny == null)
+    {
+        johnny = await userManager.FindByEmailAsync("johnny@credijungles.com");
+    }
+    if (johnny == null)
+    {
+        johnny = new Usuario
+        {
+            UserName = "Johnny",
+            Email = "johnny@credijungles.com",
+            NombreCompleto = "Johnny",
+            EmailConfirmed = true,
+            Activo = true
+        };
+        var resJohnny = await userManager.CreateAsync(johnny, "0510Julian");
+        if (resJohnny.Succeeded)
+        {
+            await userManager.AddToRoleAsync(johnny, "Admin");
+            await userManager.AddToRoleAsync(johnny, "Master");
+        }
+    }
     else
     {
-        var admin = await userManager.FindByEmailAsync("admin@sistema.com");
-        if (admin != null)
-        {
-            if (!await userManager.IsInRoleAsync(admin, "Admin"))
-            {
-                await userManager.AddToRoleAsync(admin, "Admin");
-            }
-            if (!await userManager.IsInRoleAsync(admin, "Master"))
-            {
-                await userManager.AddToRoleAsync(admin, "Master");
-            }
-        }
+        johnny.Activo = true;
+        await userManager.UpdateAsync(johnny);
+        var token = await userManager.GeneratePasswordResetTokenAsync(johnny);
+        await userManager.ResetPasswordAsync(johnny, token, "0510Julian");
+        if (!await userManager.IsInRoleAsync(johnny, "Admin"))
+            await userManager.AddToRoleAsync(johnny, "Admin");
+        if (!await userManager.IsInRoleAsync(johnny, "Master"))
+            await userManager.AddToRoleAsync(johnny, "Master");
     }
 }
 

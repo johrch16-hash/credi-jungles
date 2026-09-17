@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -42,15 +43,33 @@ public class AccountController : Controller
     {
         if (!ModelState.IsValid) return View(model);
 
-        var user = await _userManager.FindByEmailAsync(model.Email);
+        var identifier = (model.Email ?? "").Trim();
+        var password = (model.Password ?? "").Trim();
+
+        var user = await _userManager.FindByEmailAsync(identifier);
+        if (user == null)
+        {
+            user = await _userManager.FindByNameAsync(identifier);
+        }
+
+        if (user == null)
+        {
+            var upperId = identifier.ToUpperInvariant();
+            user = await _userManager.Users.FirstOrDefaultAsync(u =>
+                (u.NormalizedUserName != null && u.NormalizedUserName == upperId) ||
+                (u.NormalizedEmail != null && u.NormalizedEmail == upperId) ||
+                (u.UserName != null && u.UserName.ToLower() == identifier.ToLower()) ||
+                (u.Email != null && u.Email.ToLower() == identifier.ToLower()));
+        }
+
         if (user == null || !user.Activo)
         {
-            ModelState.AddModelError("", "Credenciales inválidas.");
+            ModelState.AddModelError("", "Credenciales inv�lidas.");
             return View(model);
         }
 
         var result = await _signInManager.PasswordSignInAsync(
-            user.UserName!, model.Password, false, lockoutOnFailure: true);
+            user.UserName!, password, false, lockoutOnFailure: true);
 
         if (result.Succeeded)
         {
