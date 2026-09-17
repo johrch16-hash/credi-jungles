@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace PrestamosCobros.BLL.DTOs;
 
@@ -8,7 +8,7 @@ public class UsuarioCreateDto
     [MaxLength(100)]
     public string NombreCompleto { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "El email es requerido")]
+    [Required(ErrorMessage = "El usuario o email es requerido")]
     [EmailAddress(ErrorMessage = "Email no válido")]
     public string Email { get; set; } = string.Empty;
 
@@ -82,8 +82,7 @@ public class UsuarioListDto
 
 public class LoginDto
 {
-    [Required(ErrorMessage = "El email es requerido")]
-    [EmailAddress]
+    [Required(ErrorMessage = "El usuario o email es requerido")]
     public string Email { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "La contraseña es requerida")]
