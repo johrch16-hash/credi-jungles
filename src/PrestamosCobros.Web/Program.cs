@@ -285,6 +285,7 @@ using (var scope = app.Services.CreateScope())
             }
             else
             {
+                try { await context.Database.EnsureCreatedAsync(); } catch (Exception ex) { Console.WriteLine("[DB Debug] EnsureCreated: " + ex.Message); }
                 // Asegurar tablas base en PostgreSQL
                 try
                 {
