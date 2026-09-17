@@ -1,0 +1,151 @@
+@{
+    ViewData["Title"] = "Configuración WhatsApp";
+}
+
+<div class="space-y-10 pb-12 px-4">
+    <div class="flex items-center gap-5">
+        <div class="w-16 h-16 bg-primary-container text-white rounded-[24px] flex items-center justify-center soft-raised-sm">
+            <span class="material-symbols-outlined text-4xl">chat</span>
+        </div>
+        <div>
+            <h2 class="text-4xl font-black text-primary-container tracking-tighter">WhatsApp API</h2>
+            <p class="text-xs font-black text-secondary uppercase tracking-widest opacity-40">Configuración Cloud API</p>
+        </div>
+    </div>
+
+    <div class="max-w-xl">
+        <div class="soft-card !p-10">
+            <form id="configForm" class="space-y-6">
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-secondary opacity-40 mb-2 ml-2">Phone Number ID</label>
+                    <input type="text" id="phoneNumberId" required class="soft-input w-full px-5 py-4 text-sm focus:outline-none text-primary-container font-bold">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-secondary opacity-40 mb-2 ml-2">Access Token</label>
+                    <textarea id="accessToken" required rows="4" class="soft-input w-full px-5 py-4 text-sm focus:outline-none text-primary-container font-bold resize-none"></textarea>
+                </div>
+
+                <div id="statusMessage" class="text-center text-xs font-bold py-2 hidden"></div>
+
+                <button type="submit" class="soft-button soft-button-primary w-full py-5 text-xs font-black uppercase tracking-widest mt-4 !rounded-2xl">
+                    Guardar Configuración
+                </button>
+            </form>
+
+            <div class="mt-8 pt-8 border-t-2 border-surface-container-low border-dashed">
+                <h2 class="text-lg font-black text-primary-container mb-2">Prueba de Envío</h2>
+                <p class="text-[10px] text-secondary font-bold uppercase tracking-widest opacity-40 mb-4">Verifica tu conexión manual</p>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-secondary opacity-40 mb-2 ml-2">Número Destino</label>
+                        <input type="text" id="testPhone" placeholder="+50688888888" class="soft-input w-full px-5 py-4 text-sm focus:outline-none text-primary-container font-bold">
+                    </div>
+                    <button id="btnTest" type="button" class="soft-button w-full py-4 text-[10px] font-black uppercase tracking-widest !rounded-2xl" style="background:#4b5563;">
+                        Enviar Mensaje de Prueba
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-8 border-t-2 border-surface-container-low border-dashed flex justify-between items-center">
+                <a href="@Url.Action("Index", "Home")" class="text-[10px] font-black uppercase tracking-widest opacity-40 hover:opacity-100 transition-opacity">Volver al Panel</a>
+                <span id="fechaActualizacion" class="text-[8px] text-secondary font-bold uppercase opacity-40"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+@Html.AntiForgeryToken()
+<script>
+    const statusDiv = document.getElementById('statusMessage');
+
+    async function cargarConfig() {
+        try {
+            const res = await fetch('/api/configuracion/whatsapp/obtener');
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('phoneNumberId').value = data.phoneNumberId;
+                document.getElementById('accessToken').placeholder = data.accessToken;
+                if (data.fechaActualizacion) {
+                    const fecha = new Date(data.fechaActualizacion);
+                    document.getElementById('fechaActualizacion').innerText = `Actualizado: ${fecha.toLocaleDateString()} ${fecha.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                }
+            }
+        } catch (err) {
+            console.error("Error cargando configuración:", err);
+        }
+    }
+
+    document.getElementById('configForm').onsubmit = async (e) => {
+        e.preventDefault();
+
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+        const payload = {
+            phoneNumberId: document.getElementById('phoneNumberId').value,
+            accessToken: document.getElementById('accessToken').value
+        };
+
+        statusDiv.classList.remove('hidden', 'text-emerald-600', 'text-rose-600');
+        statusDiv.innerText = "Guardando...";
+        statusDiv.classList.add('block');
+
+        try {
+            const res = await fetch('/api/configuracion/whatsapp/guardar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                statusDiv.innerText = "Configuración guardada correctamente";
+                statusDiv.classList.add('text-emerald-600');
+                setTimeout(() => statusDiv.classList.add('hidden'), 3000);
+                cargarConfig();
+            } else {
+                const err = await res.text();
+                statusDiv.innerText = "Error: " + err;
+                statusDiv.classList.add('text-rose-600');
+            }
+        } catch (err) {
+            statusDiv.innerText = "Error de conexión";
+            statusDiv.classList.add('text-rose-600');
+        }
+    };
+
+    document.getElementById('btnTest').onclick = async () => {
+        const telefono = document.getElementById('testPhone').value;
+        if (!telefono) {
+            alert("Por favor ingresa un número de teléfono.");
+            return;
+        }
+
+        statusDiv.classList.remove('hidden', 'text-emerald-600', 'text-rose-600');
+        statusDiv.innerText = "Enviando mensaje de prueba...";
+        statusDiv.classList.add('block');
+
+        try {
+            const res = await fetch('/api/configuracion/whatsapp/test-mensaje', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ telefono })
+            });
+
+            if (res.ok) {
+                statusDiv.innerText = "¡Mensaje enviado con éxito!";
+                statusDiv.classList.add('text-emerald-600');
+            } else {
+                const err = await res.json();
+                statusDiv.innerText = "Error: " + (err.mensaje || "No se pudo enviar");
+                statusDiv.classList.add('text-rose-600');
+            }
+        } catch (err) {
+            statusDiv.innerText = "Error de conexión al servidor";
+            statusDiv.classList.add('text-rose-600');
+        }
+    };
+
+    cargarConfig();
+</script>
+}

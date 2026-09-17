@@ -1,0 +1,82 @@
+@model PrestamosCobros.BLL.DTOs.ClienteDetalleDto
+
+@{
+    ViewData["Title"] = "Historial de Créditos - " + Model.NombreCompleto;
+}
+
+<div class="mb-8 flex items-center justify-between flex-wrap gap-4">
+    <div class="flex items-center gap-4">
+        <a href="@Url.Action("Detalle", "Clientes", new { id = Model.ClienteId })" class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-secondary hover:bg-surface-container hover:text-primary-container transition-all">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </a>
+        <div>
+            <h1 class="text-3xl font-black text-primary-container tracking-tighter">Historial de Créditos</h1>
+            <p class="text-xs font-bold text-secondary tracking-widest uppercase mt-1">@Model.NombreCompleto</p>
+        </div>
+    </div>
+    <span class="soft-badge bg-slate-200 text-slate-600 font-black">INACTIVOS</span>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    @foreach (var p in Model.Prestamos.Where(x => x.Estado == "Liquidado" || x.Estado == "Renovado").OrderByDescending(x => x.FechaInicio))
+    {
+        <div class="soft-card !p-6 border-l-4 border-slate-400 bg-slate-50/50 flex flex-col gap-4">
+            <div class="flex justify-between items-start">
+                <div class="space-y-1">
+                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest opacity-60">Expediente</span>
+                    <h4 class="text-lg font-black text-slate-700 leading-none">
+                        #@p.PrestamoId.ToString("D5")
+                    </h4>
+                    @if (!string.IsNullOrEmpty(p.NombreAlias))
+                    {
+                        <span class="text-xs font-black text-slate-600 block mt-1">@p.NombreAlias</span>
+                    }
+                </div>
+                <span class="soft-badge bg-slate-200 text-slate-600 text-[9px] font-black uppercase">@p.Estado</span>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 flex-1 content-start">
+                <div>
+                    <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest opacity-60 mb-1">Monto Original</p>
+                    <p class="text-sm font-black text-slate-700">₡@p.MontoPrestado.ToString("N0")</p>
+                </div>
+                <div>
+                    <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest opacity-60 mb-1">Fecha</p>
+                    <p class="text-sm font-black text-slate-700">@p.FechaInicio.ToString("dd MMM yyyy")</p>
+                </div>
+                <div class="col-span-2">
+                    <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest opacity-60 mb-1">Amortización</p>
+                    <div class="flex items-center gap-2">
+                        <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-slate-500 rounded-full" style="width: @p.PorcentajePagado%"></div>
+                        </div>
+                        <span class="text-xs font-black text-slate-600">@p.PorcentajePagado%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-200 pt-4 flex justify-between items-center mt-auto">
+                <a href="@Url.Action("Detalle", "Prestamos", new { id = p.PrestamoId })" class="flex items-center gap-2 text-[9px] font-black text-slate-500 uppercase tracking-[0.1em] hover:text-slate-800 transition-colors">
+                    VER DETALLES <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </a>
+                @if (User.IsInRole("Master") || User.IsInRole("Admin"))
+                {
+                    <form method="post" action="@Url.Action("Eliminar", "Prestamos")" onsubmit="return confirm('¿Está seguro de que desea eliminar permanentemente este crédito histórico? Esta acción no se puede deshacer.');" class="inline m-0 p-0">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@p.PrestamoId" />
+                        <button type="submit" class="w-7 h-7 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-100 hover:text-rose-700 transition-colors" title="Eliminar Histórico">
+                            <span class="material-symbols-outlined text-xs">delete</span>
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+    }
+    
+    @if (!Model.Prestamos.Any(x => x.Estado == "Liquidado" || x.Estado == "Renovado"))
+    {
+        <div class="col-span-full py-12 text-center text-slate-400 font-bold">
+            No hay créditos inactivos o renovados para este cliente.
+        </div>
+    }
+</div>

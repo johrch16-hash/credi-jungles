@@ -1,0 +1,80 @@
+@{
+    ViewData["Title"] = "Mi Perfil";
+}
+
+<div class="space-y-10 pb-12 px-4">
+    <!-- Header -->
+    <div class="flex items-center gap-5">
+        <div class="w-16 h-16 bg-primary-container text-white rounded-[24px] flex items-center justify-center soft-raised-sm">
+            <span class="material-symbols-outlined text-4xl">person</span>
+        </div>
+        <div>
+            <h2 class="text-[2.75rem] font-black text-primary-container tracking-tighter leading-tight">Mi Perfil</h2>
+            <p class="text-xs font-black text-secondary uppercase tracking-widest opacity-40">Información de tu cuenta</p>
+        </div>
+    </div>
+
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-surface rounded-[40px] soft-raised p-8 sm:p-12 border border-white/50">
+            <!-- Avatar -->
+            <div class="flex flex-col items-center gap-4 mb-10">
+                <div class="w-28 h-28 rounded-full soft-recessed p-1.5 bg-white">
+                    <div class="w-full h-full rounded-full bg-primary-container flex items-center justify-center text-white font-black text-4xl">
+                        @(ViewBag.UserName != null && ViewBag.UserName.ToString().Length > 0 ? ViewBag.UserName.ToString().Substring(0, 1).ToUpper() : "U")
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Cards -->
+            <div class="space-y-6">
+                <div class="bg-surface rounded-2xl soft-recessed p-5 flex items-center gap-4">
+                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined">badge</span>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-secondary opacity-40 uppercase tracking-widest">Nombre Completo</p>
+                        <p class="text-lg font-black text-primary-container">@ViewBag.UserName</p>
+                    </div>
+                </div>
+
+                <div class="bg-surface rounded-2xl soft-recessed p-5 flex items-center gap-4">
+                    <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined">shield_person</span>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-secondary opacity-40 uppercase tracking-widest">Rol en el Sistema</p>
+                        <p class="text-lg font-black text-primary-container">@ViewBag.UserRole</p>
+                    </div>
+                </div>
+
+                <div class="bg-surface rounded-2xl soft-recessed p-5 flex items-center gap-4">
+                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined">phone</span>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-secondary opacity-40 uppercase tracking-widest">Teléfono</p>
+                        <p class="text-lg font-black text-primary-container">@ViewBag.UserTelefono</p>
+                    </div>
+                </div>
+
+                <div class="bg-surface rounded-2xl soft-recessed p-5 flex items-center gap-4">
+                    <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined">mail</span>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-secondary opacity-40 uppercase tracking-widest">Correo Electrónico</p>
+                        <p class="text-lg font-black text-primary-container">@ViewBag.UserEmail</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="pt-8 flex justify-center">
+                <a href="@Url.Action("Index", "Home")" class="soft-button soft-button-primary !py-4 !px-8 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">arrow_back</span>
+                    <span>Volver al Panel Principal</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

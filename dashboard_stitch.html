@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LoanExpert Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary": "#ffffff",
+                    "primary-container": "#001f3f",
+                    "outline": "#74777f",
+                    "tertiary": "#110200",
+                    "secondary-fixed-dim": "#c4c7ca",
+                    "on-primary-fixed": "#001c3a",
+                    "surface-container": "#efedf0",
+                    "secondary-fixed": "#e0e3e6",
+                    "on-primary-fixed-variant": "#2f486a",
+                    "on-secondary": "#ffffff",
+                    "secondary": "#5b5f62",
+                    "inverse-surface": "#2f3033",
+                    "surface-variant": "#e3e2e5",
+                    "on-tertiary-fixed": "#351002",
+                    "tertiary-container": "#391303",
+                    "on-tertiary-fixed-variant": "#6b3a25",
+                    "surface-dim": "#dbd9dd",
+                    "primary": "#000613",
+                    "primary-fixed-dim": "#afc8f0",
+                    "on-secondary-fixed-variant": "#43474a",
+                    "inverse-on-surface": "#f2f0f3",
+                    "outline-variant": "#c4c6cf",
+                    "on-surface": "#1a1c1e",
+                    "surface-container-high": "#e9e7eb",
+                    "surface": "#faf9fc",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#ffdbce",
+                    "on-primary-container": "#6f88ad",
+                    "on-tertiary-container": "#b5785f",
+                    "surface-container-highest": "#e3e2e5",
+                    "surface-container-low": "#f4f3f6",
+                    "on-error": "#ffffff",
+                    "background": "#faf9fc",
+                    "secondary-container": "#dde0e3",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-container": "#5f6366",
+                    "surface-tint": "#476083",
+                    "on-surface-variant": "#43474e",
+                    "error": "#ba1a1a",
+                    "inverse-primary": "#afc8f0",
+                    "surface-bright": "#faf9fc",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-fixed": "#181c1e",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed-dim": "#fdb69a",
+                    "on-background": "#1a1c1e",
+                    "primary-fixed": "#d4e3ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "element-padding-md": "1rem",
+                    "container-margin": "1.25rem",
+                    "element-padding-sm": "0.75rem",
+                    "stack-gap": "1rem",
+                    "section-padding": "1.5rem"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "data-display": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-md": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "data-display": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700"}],
+                    "headline-lg": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-md": ["22px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .soft-card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background font-body-md text-on-background min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-40 bg-surface shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)]">
+<div class="flex justify-between items-center px-container-margin py-element-padding-sm max-w-[600px] mx-auto">
+<button class="material-symbols-outlined text-primary hover:bg-surface-container-low transition-colors p-2 rounded-full active:scale-95 duration-200" data-icon="menu">menu</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary-container">LoanExpert</h1>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-fixed active:scale-95 duration-200 transition-transform">
+<img alt="User Profile" data-alt="A professional headshot of a smiling financial manager in a bright, modern office setting. The person has a friendly and approachable expression, wearing a clean, smart-casual navy blue shirt. The background is softly blurred with minimalist white furniture and natural daylight filtering through large windows, maintaining a clean Soft UI aesthetic. High-key lighting emphasizes clarity and professional trust." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGcW-h4xt2TvH8RWCL6YRjRRc4S6n2yVwAWUs2E3KAe7p3dCf_to-iMwXDXMTk-MIA_W6XsiINie67kVzO8zlgRUBt_TlFjvs6vO9K5A_2JW30DhV0qBGwbAxgmomGrcuqAf6xM6KKDbX0CThjNxDqWJZLcENYZTSMxbPni24z1R8rBIS5e9XLPryFV9i7b9osdW-39dY2TClFXxD-t25Jp2o1P2_4STrFb-x91tfahL7e_f7fKxxlkuHTPzZqMs1U4L2c2dMn8EDb"/>
+</div>
+</div>
+</header>
+<!-- Sidebar / NavigationDrawer (Desktop/Large Mobile View) -->
+<!-- Hidden for typical mobile layout but structural requirement -->
+<aside class="hidden md:flex fixed left-0 top-0 h-full w-64 z-50 flex-col gap-stack-gap p-section-padding bg-surface shadow-md">
+<div class="font-headline-md text-headline-md text-primary-container font-bold mb-6">Loan Manager</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 p-3 bg-secondary-container text-on-secondary-container font-bold rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-3 p-3 text-secondary hover:bg-surface-container-high transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span> Customers
+            </a>
+<a class="flex items-center gap-3 p-3 text-secondary hover:bg-surface-container-high transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span> Loans
+            </a>
+<a class="flex items-center gap-3 p-3 text-secondary hover:bg-surface-container-high transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span> Expenses
+            </a>
+<a class="flex items-center gap-3 p-3 text-secondary hover:bg-surface-container-high transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span> Settings
+            </a>
+</nav>
+</aside>
+<!-- Main Canvas -->
+<main class="pt-20 px-container-margin max-w-[600px] mx-auto space-y-stack-gap">
+<!-- Date Range Selector -->
+<section class="mt-4">
+<button class="w-full flex items-center justify-between bg-surface-container-lowest p-element-padding-md rounded-xl soft-card-shadow text-primary font-body-md hover:bg-surface-container-low transition-colors active:scale-[0.98] duration-150">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-primary-container" data-icon="calendar_month">calendar_month</span>
+<span class="font-semibold">Oct 1, 2023 - Oct 31, 2023</span>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="expand_more">expand_more</span>
+</button>
+</section>
+<!-- Welcome Banner -->
+<section class="relative overflow-hidden rounded-xl bg-primary-container p-6 text-on-primary soft-card-shadow">
+<div class="relative z-10">
+<h2 class="font-headline-md text-headline-md mb-1">Hello, Carlos</h2>
+<p class="font-body-md opacity-80">Welcome back to your loan summary.</p>
+</div>
+<div class="absolute -right-4 -bottom-4 w-32 h-32 bg-on-primary-fixed-variant rounded-full opacity-20"></div>
+<div class="absolute right-12 top-4 w-12 h-12 bg-on-primary-fixed-variant rounded-full opacity-10"></div>
+</section>
+<!-- Metrics Grid (Bento Style) -->
+<section class="grid grid-cols-2 gap-4">
+<!-- Total Prestado -->
+<div class="bg-surface-container-lowest p-element-padding-md rounded-xl soft-card-shadow flex flex-col gap-2 hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center justify-between">
+<div class="p-2 bg-primary-fixed text-on-primary-fixed rounded-lg">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+</div>
+</div>
+<div>
+<p class="text-secondary font-label-sm uppercase tracking-wider">Total Prestado</p>
+<p class="font-data-display text-data-display text-primary">$45.2k</p>
+</div>
+</div>
+<!-- Recuperado -->
+<div class="bg-surface-container-lowest p-element-padding-md rounded-xl soft-card-shadow flex flex-col gap-2 hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center justify-between">
+<div class="p-2 bg-tertiary-fixed text-on-tertiary-fixed-variant rounded-lg">
+<span class="material-symbols-outlined" data-icon="keyboard_double_arrow_down">keyboard_double_arrow_down</span>
+</div>
+<span class="text-[10px] px-2 py-1 bg-green-100 text-green-700 font-bold rounded-full">+12%</span>
+</div>
+<div>
+<p class="text-secondary font-label-sm uppercase tracking-wider">Recuperado</p>
+<p class="font-data-display text-data-display text-primary">$31.8k</p>
+</div>
+</div>
+<!-- Pendiente -->
+<div class="bg-surface-container-lowest p-element-padding-md rounded-xl soft-card-shadow flex flex-col gap-2 hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center justify-between">
+<div class="p-2 bg-secondary-container text-on-secondary-container rounded-lg">
+<span class="material-symbols-outlined" data-icon="schedule">schedule</span>
+</div>
+</div>
+<div>
+<p class="text-secondary font-label-sm uppercase tracking-wider">Pendiente</p>
+<p class="font-data-display text-data-display text-primary">$13.4k</p>
+</div>
+</div>
+<!-- Ganancias -->
+<div class="bg-surface-container-lowest p-element-padding-md rounded-xl soft-card-shadow flex flex-col gap-2 hover:bg-surface-container-low transition-colors cursor-pointer border-t-4 border-primary-container">
+<div class="flex items-center justify-between">
+<div class="p-2 bg-on-primary-fixed text-primary-fixed rounded-lg">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+</div>
+</div>
+<div>
+<p class="text-secondary font-label-sm uppercase tracking-wider">Ganancias</p>
+<p class="font-data-display text-data-display text-primary-container">$8.2k</p>
+</div>
+</div>
+<!-- Gastos -->
+<div class="bg-surface-container-lowest p-element-padding-md rounded-xl soft-card-shadow flex flex-col gap-2 hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center justify-between">
+<div class="p-2 bg-error-container text-on-error-container rounded-lg">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+</div>
+</div>
+<div>
+<p class="text-secondary font-label-sm uppercase tracking-wider">Gastos</p>
+<p class="font-data-display text-data-display text-error">$1.1k</p>
+</div>
+</div>
+<!-- Neta -->
+<div class="bg-surface-container-lowest p-element-padding-md rounded-xl soft-card-shadow flex flex-col gap-2 hover:bg-surface-container-low transition-colors cursor-pointer border-l-4 border-primary-container">
+<div class="flex items-center justify-between">
+<div class="p-2 bg-surface-variant text-on-surface-variant rounded-lg">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+</div>
+</div>
+<div>
+<p class="text-secondary font-label-sm uppercase tracking-wider">Neta</p>
+<p class="font-data-display text-data-display text-primary">$7.1k</p>
+</div>
+</div>
+</section>
+<!-- Quick Actions Sheet Style Section -->
+<section class="bg-surface-container-lowest rounded-xl p-6 soft-card-shadow">
+<h3 class="font-headline-md text-primary-container mb-4">Quick Actions</h3>
+<div class="flex justify-between items-center gap-4">
+<button class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-12 h-12 bg-primary-fixed flex items-center justify-center rounded-full group-hover:scale-110 transition-transform shadow-sm">
+<span class="material-symbols-outlined text-on-primary-fixed" data-icon="add_card">add_card</span>
+</div>
+<span class="font-label-sm text-secondary">New Loan</span>
+</button>
+<button class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-12 h-12 bg-secondary-fixed flex items-center justify-center rounded-full group-hover:scale-110 transition-transform shadow-sm">
+<span class="material-symbols-outlined text-on-secondary-fixed-variant" data-icon="person_add">person_add</span>
+</div>
+<span class="font-label-sm text-secondary">Customer</span>
+</button>
+<button class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-12 h-12 bg-tertiary-fixed flex items-center justify-center rounded-full group-hover:scale-110 transition-transform shadow-sm">
+<span class="material-symbols-outlined text-on-tertiary-fixed-variant" data-icon="summarize">summarize</span>
+</div>
+<span class="font-label-sm text-secondary">Report</span>
+</button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 max-w-[600px] mx-auto bg-surface shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] rounded-t-xl z-50 md:hidden">
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary rounded-xl px-3 py-1 transition-transform duration-150 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-transform duration-150 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-sm text-label-sm">Customers</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-transform duration-150 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-label-sm text-label-sm">Loans</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-transform duration-150 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-sm text-label-sm">Expenses</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-transform duration-150 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+</nav>
+<!-- FAB (Suppressed on Dashboard as per rules if not specifically requested, but often useful for quick loan creation) -->
+<!-- Removed to prioritize the Metrics Grid focus and "suppress" rules for non-specific primary action screens -->
+</body></html>

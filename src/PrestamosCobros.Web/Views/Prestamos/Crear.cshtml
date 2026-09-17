@@ -1,0 +1,306 @@
+@model PrestamosCobros.BLL.DTOs.PrestamoCreateDto
+@{
+    ViewData["Title"] = "Nuevo Crédito";
+}
+<div class="space-y-10 pb-12 px-4">
+    <!-- Header -->
+    <div class="flex items-center gap-5">
+        <div class="w-16 h-16 bg-primary-container text-white rounded-[24px] flex items-center justify-center soft-raised-sm">
+            <span class="material-symbols-outlined text-4xl">add_card</span>
+        </div>
+        <div>
+            <h2 class="text-4xl font-black text-primary-container tracking-tighter">Nuevo Crédito</h2>
+            <p class="text-secondary text-sm font-bold opacity-60">Configuración técnica del préstamo</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <!-- Formulario -->
+        <div class="lg:col-span-7">
+            <div class="soft-card !p-10">
+                <form asp-action="Crear" method="post" id="formPrestamo" class="space-y-8">
+                    @Html.AntiForgeryToken()
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div asp-validation-summary="All" class="text-rose-600 text-[10px] font-black uppercase tracking-widest bg-rose-50 p-4 rounded-2xl mb-6"></div>
+                    }
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="md:col-span-2 space-y-3">
+                            <label asp-for="ClienteId" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Seleccionar Cliente</label>
+                            <select asp-for="ClienteId" asp-items="@ViewBag.Clientes" class="soft-input !py-4">
+                                <option value="">-- Buscar en directorio --</option>
+                            </select>
+                            <span asp-validation-for="ClienteId" class="text-rose-600 text-[10px] px-3 font-bold"></span>
+                        </div>
+
+                        <div class="md:col-span-2 space-y-3">
+                            <label asp-for="NombreAlias" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Identificador / Alias</label>
+                            <input asp-for="NombreAlias" class="soft-input !py-4" placeholder="Ej: Negocio Local, Viaje..." />
+                        </div>
+
+                        <div class="space-y-3">
+                            <label asp-for="MontoPrestado" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Capital (₡)</label>
+                            <input asp-for="MontoPrestado" type="number" step="0.01" min="1" class="soft-input !py-4" id="montoPrestado" placeholder="0.00" />
+                            <span asp-validation-for="MontoPrestado" class="text-rose-600 text-[10px] px-3 font-bold"></span>
+                        </div>
+
+                        <div class="space-y-3">
+                            <label asp-for="PorcentajeInteres" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Interés (%)</label>
+                            <input asp-for="PorcentajeInteres" type="number" step="0.01" min="0" max="100" class="soft-input !py-4" id="interes" placeholder="0%" />
+                        </div>
+
+                        <div class="space-y-3">
+                            <label asp-for="FechaInicio" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Inicio</label>
+                            <input asp-for="FechaInicio" type="date" class="soft-input !py-4" id="fechaInicio" />
+                        </div>
+
+                        <div class="space-y-3">
+                            <label asp-for="TipoCredito" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Tipo de Crédito</label>
+                            <select asp-for="TipoCredito" class="soft-input !py-4" id="tipoCredito">
+                                <option value="Cuota Completa">Cuota Completa (Tradicional)</option>
+                                <option value="Solo Interés">Solo Interés (Capital Diferido)</option>
+                            </select>
+                        </div>
+
+                        <div class="space-y-3">
+                            <label asp-for="PeriodicidadDias" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Ciclo</label>
+                            <select asp-for="PeriodicidadDias" class="soft-input !py-4" id="periodicidad">
+                                <option value="7">Semanal</option>
+                                <option value="15">Quincenal</option>
+                                <option value="30">Mensual</option>
+                            </select>
+                        </div>
+
+                        <div class="space-y-3" id="cuotasContainer">
+                            <label asp-for="NumeroCuotas" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Cuotas</label>
+                            <input asp-for="NumeroCuotas" type="number" min="1" max="120" class="soft-input !py-4" id="numCuotas" placeholder="4" />
+                        </div>
+                    </div>
+
+                    <input type="hidden" asp-for="NumeroSinpe" />
+                    <input type="hidden" asp-for="CuentaIban1" />
+                    <input type="hidden" asp-for="CuentaIban2" />
+                    <input type="hidden" asp-for="CuentaIban3" />
+
+                    <div class="flex flex-col gap-5 pt-6">
+                        <button type="button" class="soft-button !py-5 !rounded-2xl flex items-center justify-center gap-3 font-black text-xs tracking-widest" id="btnPreview">
+                            <span class="material-symbols-outlined">calculate</span>
+                            SIMULAR PLAN DE PAGOS
+                        </button>
+                        <button type="submit" class="soft-button soft-button-primary !py-5 !rounded-2xl flex items-center justify-center gap-3 font-black text-xs tracking-widest shadow-xl disabled:opacity-30 disabled:cursor-not-allowed" id="btnCrear" disabled>
+                            <span class="material-symbols-outlined">verified</span>
+                            CREAR PRÉSTAMO AHORA
+                        </button>
+                        <a href="@Url.Action("Index")" class="text-center text-[11px] font-black text-secondary uppercase tracking-[0.3em] opacity-100 hover:text-primary-container transition-all">
+                            Cancelar y Volver
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Preview Canvas -->
+        <div class="lg:col-span-5">
+            <div id="previewCard" class="hidden lg:sticky top-24 mt-8 lg:mt-0">
+                <div class="soft-card !p-8 border-t-8 border-primary-container">
+                    <h3 class="text-xl font-black text-primary-container mb-8 tracking-tighter">Proyección del Crédito</h3>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-8">
+                        <div class="soft-recessed p-4 rounded-2xl text-center">
+                            <p class="text-[8px] font-black text-secondary uppercase tracking-widest opacity-40 mb-1">Capital Solicitado</p>
+                            <p class="text-sm font-black text-primary-container" id="prevPrestado">₡0</p>
+                        </div>
+                        <div class="soft-recessed p-4 rounded-2xl text-center">
+                            <p class="text-[8px] font-black text-secondary uppercase tracking-widest opacity-40 mb-1">Cuota Fija</p>
+                            <p class="text-sm font-black text-primary-container" id="previewTotal">₡0</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar" id="previewCuotas">
+                        <!-- Cuotas se inyectarán aquí -->
+                    </div>
+                    
+                    <div class="mt-8 pt-6 border-t-2 border-surface-container-low border-dashed">
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="text-[10px] font-black text-secondary uppercase tracking-widest">Total a Pagar (Real)</span>
+                            <span class="text-2xl font-black text-primary-container" id="prevFinalTotal">₡0</span>
+                        </div>
+
+                        <!-- WhatsApp Projection Box -->
+                        <div class="bg-[#dcf8c6]/30 border border-[#25D366]/30 p-5 rounded-[20px]">
+                            <h4 class="text-[11px] font-black text-[#128C7E] flex items-center gap-2 mb-4 uppercase tracking-widest">
+                                <span class="material-symbols-outlined text-lg">chat</span>
+                                Vista Previa de WhatsApp (Ley 3%)
+                            </h4>
+                            <div class="text-sm font-medium text-slate-700 leading-relaxed font-sans" id="whatsappPreviewBox">
+                                <p class="opacity-50 italic">Haga clic en "SIMULAR PLAN DE PAGOS" para ver la plantilla espejo.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const btnPreview = document.getElementById('btnPreview');
+    const btnCrear = document.getElementById('btnCrear');
+    const tipoCreditoSelect = document.getElementById('tipoCredito');
+    const cuotasContainer = document.getElementById('cuotasContainer');
+    const numCuotasInput = document.getElementById('numCuotas');
+
+    function toggleCuotasVisibility() {
+        if (tipoCreditoSelect.value === 'Solo Interés') {
+            cuotasContainer.style.display = 'none';
+        } else {
+            cuotasContainer.style.display = 'block';
+        }
+    }
+
+    // Inicializar y escuchar cambios
+    toggleCuotasVisibility();
+    tipoCreditoSelect.addEventListener('change', toggleCuotasVisibility);
+
+    btnPreview.addEventListener('click', async () => {
+        const data = {
+            clienteId: parseInt(document.querySelector('[name="ClienteId"]').value) || 0,
+            montoPrestado: parseFloat(document.getElementById('montoPrestado').value.replace(',', '.')) || 0,
+            porcentajeInteres: parseFloat(document.getElementById('interes').value.replace(',', '.')) || 0,
+            fechaInicio: document.getElementById('fechaInicio').value,
+            periodicidadDias: parseInt(document.getElementById('periodicidad').value) || 7,
+            numeroCuotas: parseInt(document.getElementById('numCuotas').value) || 4,
+            tipoCredito: document.getElementById('tipoCredito').value
+        };
+
+        if (data.tipoCredito === 'Solo Interés') {
+            data.numeroCuotas = 1;
+        }
+
+        if (data.montoPrestado <= 0 || (data.tipoCredito !== 'Solo Interés' && data.numeroCuotas <= 0)) {
+            alert('Complete el monto y número de cuotas (si aplica).');
+            return;
+        }
+
+        try {
+            const r = await fetch('/Prestamos/Preview', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (!r.ok) return;
+            const preview = await r.json();
+
+            document.getElementById('prevPrestado').textContent = `₡${preview.montoTotal.toLocaleString('es-CR')}`;
+            document.getElementById('previewTotal').textContent = `₡${preview.montoCuota.toLocaleString('es-CR')}`;
+            document.getElementById('prevFinalTotal').textContent = `₡${preview.montoTotal.toLocaleString('es-CR')}`;
+
+            const container = document.getElementById('previewCuotas');
+            container.innerHTML = preview.cuotas.map(c =>
+                `<div class="flex justify-between items-center p-4 soft-recessed bg-surface border-l-4 border-primary-container rounded-2xl group hover:soft-raised-sm transition-all">
+                    <div class="flex items-center gap-4">
+                        <span class="text-xs font-black text-primary-container opacity-20">#${c.numero.toString().padStart(2, '0')}</span>
+                        <span class="text-xs font-black text-primary-container uppercase tracking-tighter">${new Date(c.fechaVencimiento).toLocaleDateString('es', { day: '2-digit', month: 'short' })}</span>
+                    </div>
+                    <span class="text-sm font-black text-primary-container">₡${c.monto.toLocaleString('es-CR')}</span>
+                </div>`
+            ).join('');
+
+            document.getElementById('previewCard').classList.remove('hidden');
+            btnCrear.disabled = false;
+
+            // --- Proyección WhatsApp Basada en la Lógica Cohesiva ---
+            const selectCliente = document.querySelector('[name="ClienteId"]');
+            const clienteNombre = selectCliente.options[selectCliente.selectedIndex]?.text.split(' - ')[0] || "Cliente";
+            
+            // Generar string de cuotas horizontales
+            let cuotasHorizontales = preview.cuotas.map(c => {
+                let fechaFormateada = new Date(c.fechaVencimiento).toLocaleDateString('es', { day: '2-digit', month: 'short' }).toUpperCase();
+                return `🔹 Cuota #${c.numero.toString().padStart(2, '0')} (${fechaFormateada}): ₡${c.monto.toLocaleString('es-CR')}`;
+            });
+            const stringCuotas = cuotasHorizontales.join('  |  ');
+
+            const templateMsg = `Estimado(a) <b>${clienteNombre}</b>, adjuntamos la proyección de su crédito:<br><br>
+💰 <b>Resumen Financiero:</b><br>
+• Capital: ₡${preview.montoCreditoVisible.toLocaleString('es-CR')}<br>
+• Interés (3% Ley): ₡${preview.gastoLey.toLocaleString('es-CR')}<br>
+• Cuota Pactada: ₡${preview.montoCuota.toLocaleString('es-CR')}<br><br>
+📋 <b>Detalle de Cuotas:</b><br>
+<span class="text-[11px] bg-white p-2 rounded block mt-1 border border-slate-200">${stringCuotas}</span><br><br>
+<b>Monto Total a Pagar: ₡${preview.montoTotal.toLocaleString('es-CR')}</b><br><br>
+Muchas gracias por su confianza.`;
+
+            document.getElementById('whatsappPreviewBox').innerHTML = templateMsg;
+
+        } catch (e) {
+            console.error(e);
+        }
+    });
+    const formPrestamo = document.getElementById('formPrestamo');
+
+    formPrestamo.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        btnCrear.disabled = true;
+        btnCrear.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> PROCESANDO...';
+
+        const formData = new FormData(formPrestamo);
+        
+        try {
+            const r = await fetch('/Prestamos/Crear', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+
+            if (!r.ok) {
+                const isJson = r.headers.get('content-type')?.includes('application/json');
+                if(isJson) {
+                    const errData = await r.json();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: errData.message || 'Error al crear el préstamo'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Verifique los datos del formulario.'
+                    });
+                }
+                btnCrear.disabled = false;
+                btnCrear.innerHTML = '<span class="material-symbols-outlined">verified</span> CREAR PRÉSTAMO AHORA';
+                return;
+            }
+
+            const data = await r.json();
+            if(data.success) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: '¡Proyección de crédito enviada con éxito!',
+                    text: data.message,
+                    confirmButtonColor: '#25D366'
+                });
+                window.location.href = '/Prestamos/Index';
+            }
+        } catch(err) {
+            console.error(err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de Red',
+                text: 'Hubo un problema al procesar la solicitud.'
+            });
+            btnCrear.disabled = false;
+            btnCrear.innerHTML = '<span class="material-symbols-outlined">verified</span> CREAR PRÉSTAMO AHORA';
+        }
+    });
+</script>
+}
+

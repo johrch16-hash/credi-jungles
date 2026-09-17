@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@(string.IsNullOrEmpty(ViewData["Title"]?.ToString()) ? "Credi Jungles" : $"{ViewData["Title"]} - Credi Jungles")</title>
+    <script src="https://cdn.tailwindcss.com?plugins=container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" crossorigin="anonymous"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/soft-ui.css" asp-append-version="true" />
+    <link rel="icon" type="image/jpeg" href="~/img/logo_chichera.jpg" asp-append-version="true" />
+    <link rel="apple-touch-icon" href="~/img/logo_chichera.jpg" asp-append-version="true" />
+    <link rel="manifest" href="~/manifest.json" asp-append-version="true" />
+    <meta name="theme-color" content="#120A06" />
+    <script id="tailwind-config">
+        tailwind.config = {
+          theme: {
+            extend: {
+              fontFamily: {
+                sans: ['Outfit', 'sans-serif'],
+              },
+              colors: {
+                "primary": "#FFFFFF",
+                "primary-container": "#F5EFEB",
+                "surface": "#1C120B",
+                "surface-container": "#2A1C14",
+                "surface-container-low": "rgba(212, 175, 55, 0.15)",
+                "secondary": "#A89F91",
+                "chichera-gold": "#D4AF37",
+                "chichera-gold-light": "#F4E5B0",
+                "chichera-wood": "#170E08",
+                "chichera-jungle": "#1B4332",
+                "chichera-leaf": "#2D6A4F",
+                "chichera-accent": "#52B788"
+              }
+            }
+          }
+        }
+    </script>
+    <style nonce="xyz">
+        body { font-family: 'Outfit', sans-serif; }
+    </style>
+</head>
+<body class="selection:bg-[#D4AF37]/30 selection:text-white relative min-h-screen">
+    <!-- Ambient Warm Tiki Glow Flares -->
+    <div class="fixed w-[700px] h-[700px] rounded-full bg-[#D4AF37] opacity-[0.045] blur-[150px] pointer-events-none top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
+    <div class="fixed w-[450px] h-[450px] rounded-full bg-[#2D6A4F] opacity-[0.06] blur-[130px] pointer-events-none -top-20 -left-20"></div>
+    <div class="fixed w-[500px] h-[500px] rounded-full bg-[#D4AF37] opacity-[0.035] blur-[140px] pointer-events-none bottom-10 right-10"></div>
+
+    <!-- Marca de Agua Grabada Oficial: Credi Jungles -->
+    <div class="chichera-watermark" aria-hidden="true"></div>
+
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+        var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+        var isDashboardActive = currentController == "Home";
+        var isCustomersActive = currentController == "Clientes";
+        var isLoansActive = currentController == "Prestamos";
+        var isExpensesActive = currentController == "Gastos";
+        var isAdminActive = currentController == "Admin" || currentController == "Bitacora" || currentController == "Usuarios" || currentController == "Reportes";
+        var isSettingsActive = currentController == "Notificaciones";
+        var isSoporteActive = currentController == "Soporte";
+
+        <!-- Desktop Sidebar -->
+        <aside class="hidden lg:flex fixed left-0 top-0 h-screen w-80 z-50 flex-col p-8 bg-[#140C07]/95 backdrop-blur-2xl border-r border-[#D4AF37]/20">
+            <div class="flex items-center gap-4 mb-10 px-2">
+                <div class="w-14 h-14 rounded-[20px] p-0.5 bg-gradient-to-br from-[#F4E5B0] via-[#D4AF37] to-[#8C6239] shadow-lg overflow-hidden flex items-center justify-center flex-shrink-0">
+                    <img src="/img/logo_chichera.jpg" alt="Credi Jungles Logo" class="w-full h-full object-cover rounded-[18px]" />
+                </div>
+                <div class="overflow-hidden">
+                    <h1 class="text-xl font-black tracking-tighter leading-none gold-gradient-text uppercase">CREDI JUNGLES</h1>
+                    <div class="inline-flex items-center gap-1.5 mt-1 px-2 py-0.5 rounded-full bg-[#1B4332]/60 border border-[#52B788]/40">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#52B788] animate-pulse"></span>
+                        <span class="text-[9px] font-black uppercase tracking-[0.2em] text-[#52B788]">FINANZAS & CRÉDITOS</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex flex-col gap-2.5">
+                <a class="flex items-center gap-5 p-4 rounded-[22px] transition-all group @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "bg-gradient-to-r from-[#D4AF37]/25 to-[#D4AF37]/5 text-white border-l-4 border-[#D4AF37] shadow-[0_4px_20px_rgba(0,0,0,0.4)]" : "text-[#A89F91] hover:text-[#F4E5B0] hover:bg-[#2A1C14]/60")" 
+                   href="@Url.Action("Index", "Home")">
+                    <span class="material-symbols-outlined group-hover:scale-110 transition-transform @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "text-[#D4AF37]" : "")">grid_view</span>
+                    <span class="text-sm font-black tracking-tight uppercase tracking-widest text-[11px]">Panel Principal</span>
+                </a>
+                <a class="flex items-center gap-5 p-4 rounded-[22px] transition-all group @(ViewContext.RouteData.Values["controller"]?.ToString() == "Clientes" ? "bg-gradient-to-r from-[#D4AF37]/25 to-[#D4AF37]/5 text-white border-l-4 border-[#D4AF37] shadow-[0_4px_20px_rgba(0,0,0,0.4)]" : "text-[#A89F91] hover:text-[#F4E5B0] hover:bg-[#2A1C14]/60")" 
+                   href="@Url.Action("Index", "Clientes")">
+                    <span class="material-symbols-outlined group-hover:scale-110 transition-transform @(ViewContext.RouteData.Values["controller"]?.ToString() == "Clientes" ? "text-[#D4AF37]" : "")">group</span>
+                    <span class="text-sm font-black tracking-tight uppercase tracking-widest text-[11px]">Directorio</span>
+                </a>
+                <a class="flex items-center gap-5 p-4 rounded-[22px] transition-all group @(ViewContext.RouteData.Values["controller"]?.ToString() == "Prestamos" ? "bg-gradient-to-r from-[#D4AF37]/25 to-[#D4AF37]/5 text-white border-l-4 border-[#D4AF37] shadow-[0_4px_20px_rgba(0,0,0,0.4)]" : "text-[#A89F91] hover:text-[#F4E5B0] hover:bg-[#2A1C14]/60")" 
+                   href="@Url.Action("Index", "Prestamos")">
+                    <span class="material-symbols-outlined group-hover:scale-110 transition-transform @(ViewContext.RouteData.Values["controller"]?.ToString() == "Prestamos" ? "text-[#D4AF37]" : "")">account_balance_wallet</span>
+                    <span class="text-sm font-black tracking-tight uppercase tracking-widest text-[11px]">Operaciones</span>
+                </a>
+                
+                <a class="flex items-center gap-5 p-4 rounded-[22px] transition-all group @(ViewContext.RouteData.Values["controller"]?.ToString() == "Proyeccion" ? "bg-gradient-to-r from-[#D4AF37]/25 to-[#D4AF37]/5 text-white border-l-4 border-[#D4AF37] shadow-[0_4px_20px_rgba(0,0,0,0.4)]" : "text-[#A89F91] hover:text-[#F4E5B0] hover:bg-[#2A1C14]/60")" 
+                   href="@Url.Action("Index", "Proyeccion")">
+                    <span class="material-symbols-outlined group-hover:scale-110 transition-transform @(ViewContext.RouteData.Values["controller"]?.ToString() == "Proyeccion" ? "text-[#D4AF37]" : "")">trending_up</span>
+                    <span class="text-sm font-black tracking-tight uppercase tracking-widest text-[11px]">Proyección</span>
+                </a>
+
+                <a class="flex items-center gap-5 p-4 rounded-[22px] transition-all group @(ViewContext.RouteData.Values["controller"]?.ToString() == "Gastos" ? "bg-gradient-to-r from-[#D4AF37]/25 to-[#D4AF37]/5 text-white border-l-4 border-[#D4AF37] shadow-[0_4px_20px_rgba(0,0,0,0.4)]" : "text-[#A89F91] hover:text-[#F4E5B0] hover:bg-[#2A1C14]/60")" 
+                   href="@Url.Action("Index", "Gastos")">
+                    <span class="material-symbols-outlined group-hover:scale-110 transition-transform @(ViewContext.RouteData.Values["controller"]?.ToString() == "Gastos" ? "text-[#D4AF37]" : "")">bar_chart</span>
+                    <span class="text-sm font-black tracking-tight uppercase tracking-widest text-[11px]">Gastos</span>
+                </a>
+
+                <a class="flex items-center gap-5 p-4 rounded-[22px] transition-all group @(ViewContext.RouteData.Values["controller"]?.ToString() == "Notificaciones" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "bg-gradient-to-r from-[#D4AF37]/25 to-[#D4AF37]/5 text-white border-l-4 border-[#D4AF37] shadow-[0_4px_20px_rgba(0,0,0,0.4)]" : "text-[#A89F91] hover:text-[#F4E5B0] hover:bg-[#2A1C14]/60")" 
+                   href="@Url.Action("Index", "Notificaciones")">
+                    <span class="material-symbols-outlined group-hover:scale-110 transition-transform @(ViewContext.RouteData.Values["controller"]?.ToString() == "Notificaciones" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "text-[#D4AF37]" : "")">notifications</span>
+                    <span class="text-sm font-black tracking-tight uppercase tracking-widest text-[11px]">Alertas</span>
+                </a>
+                <a class="flex items-center gap-5 p-4 rounded-[22px] transition-all group @(ViewContext.RouteData.Values["controller"]?.ToString() == "MensajesRecibidos" ? "bg-gradient-to-r from-[#D4AF37]/25 to-[#D4AF37]/5 text-white border-l-4 border-[#D4AF37] shadow-[0_4px_20px_rgba(0,0,0,0.4)]" : "text-[#A89F91] hover:text-[#F4E5B0] hover:bg-[#2A1C14]/60")" 
+                   href="@Url.Action("Index", "MensajesRecibidos")">
+                    <span class="material-symbols-outlined group-hover:scale-110 transition-transform @(ViewContext.RouteData.Values["controller"]?.ToString() == "MensajesRecibidos" ? "text-[#D4AF37]" : "")">forum</span>
+                    <span class="text-sm font-black tracking-tight uppercase tracking-widest text-[11px]">Bandeja Entrada</span>
+                </a>
+                <a class="flex items-center gap-5 p-4 rounded-[22px] transition-all group @(isAdminActive ? "bg-gradient-to-r from-[#D4AF37]/25 to-[#D4AF37]/5 text-white border-l-4 border-[#D4AF37] shadow-[0_4px_20px_rgba(0,0,0,0.4)]" : "text-[#A89F91] hover:text-[#F4E5B0] hover:bg-[#2A1C14]/60")" 
+                   href="@Url.Action("Index", "Admin")">
+                    <span class="material-symbols-outlined group-hover:scale-110 transition-transform @(isAdminActive ? "text-[#D4AF37]" : "")">admin_panel_settings</span>
+                    <span class="text-sm font-black tracking-tight uppercase tracking-widest text-[11px]">@(User.IsInRole("Admin") ? "Panel Admin" : "Mi Perfil")</span>
+                </a>
+                <a class="flex items-center gap-5 p-4 rounded-[22px] transition-all group @(isSoporteActive ? "bg-gradient-to-r from-[#D4AF37]/25 to-[#D4AF37]/5 text-white border-l-4 border-[#D4AF37] shadow-[0_4px_20px_rgba(0,0,0,0.4)]" : "text-[#A89F91] hover:text-[#F4E5B0] hover:bg-[#2A1C14]/60")" 
+                   href="@Url.Action("Index", "Soporte")">
+                    <span class="material-symbols-outlined group-hover:scale-110 transition-transform @(isSoporteActive ? "text-[#D4AF37]" : "")">support_agent</span>
+                    <span class="text-sm font-black tracking-tight uppercase tracking-widest text-[11px]">@(User.IsInRole("Master") ? "Bandeja Soporte" : "Soporte Técnico")</span>
+                </a>
+                <a class="flex items-center gap-5 p-4 rounded-[22px] transition-all group @(isSettingsActive ? "bg-gradient-to-r from-[#D4AF37]/25 to-[#D4AF37]/5 text-white border-l-4 border-[#D4AF37] shadow-[0_4px_20px_rgba(0,0,0,0.4)]" : "text-[#A89F91] hover:text-[#F4E5B0] hover:bg-[#2A1C14]/60")" 
+                   href="@Url.Action("Configuracion", "Notificaciones")">
+                    <span class="material-symbols-outlined group-hover:scale-110 transition-transform @(isSettingsActive ? "text-[#D4AF37]" : "")">settings</span>
+                    <span class="text-sm font-black tracking-tight uppercase tracking-widest text-[11px]">Ajustes</span>
+                </a>
+            </nav>
+
+            <div class="mt-auto pt-8">
+                <div class="p-4 rounded-[24px] bg-[#100905]/80 border border-[#D4AF37]/25 flex items-center gap-4 shadow-lg">
+                    <a href="@Url.Action("Index", "Admin")" class="w-12 h-12 rounded-2xl p-0.5 bg-gradient-to-br from-[#F4E5B0] to-[#D4AF37] flex items-center justify-center text-[#1C130D] font-black text-lg hover:scale-105 transition-transform cursor-pointer shadow-md" title="Ir al Panel Administrativo">
+                        @(User.Identity?.Name != null && User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpper() : "U")
+                    </a>
+                    <div class="overflow-hidden">
+                        <a href="@Url.Action("Index", "Admin")" class="text-xs font-black truncate hover:underline text-[#F4E5B0] cursor-pointer block mb-0.5">@User.Identity.Name</a>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                            <button type="submit" class="text-[9px] font-black text-rose-400 uppercase tracking-widest opacity-80 hover:opacity-100 transition-opacity">Cerrar Sesión</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Mobile Top Bar -->
+        <header class="mobile-top-bar lg:hidden fixed top-0 left-0 w-full h-20 bg-[#160E09]/95 backdrop-blur-2xl z-40 px-5 border-b border-[#D4AF37]/20 flex items-center justify-between shadow-lg">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl p-0.5 bg-gradient-to-br from-[#F4E5B0] via-[#D4AF37] to-[#8C6239] shadow overflow-hidden flex items-center justify-center flex-shrink-0">
+                    <img src="/img/logo_chichera.jpg" alt="Credi Jungles Logo" class="w-full h-full object-cover rounded-[10px]" />
+                </div>
+                <div>
+                    <h1 class="text-lg font-black text-white tracking-tight leading-none gold-gradient-text uppercase">CREDI JUNGLES</h1>
+                    <span class="text-[9px] font-black uppercase tracking-[0.2em] text-[#52B788] font-mono">FINANZAS & CRÉDITOS</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2.5">
+                <a href="@Url.Action("Index", "Soporte")" class="w-10 h-10 rounded-full bg-[#241810] text-[#F4E5B0] border border-[#D4AF37]/20 flex items-center justify-center hover:bg-[#322116] transition-colors" title="Soporte Técnico">
+                    <span class="material-symbols-outlined text-xl">support_agent</span>
+                </a>
+                <a href="@Url.Action("Index", "MensajesRecibidos")" class="w-10 h-10 rounded-full bg-[#241810] text-[#F4E5B0] border border-[#D4AF37]/20 flex items-center justify-center hover:bg-[#322116] transition-colors" title="Bandeja de Entrada">
+                    <span class="material-symbols-outlined text-xl">forum</span>
+                </a>
+                <a href="@Url.Action("Index", "Admin")" class="w-10 h-10 rounded-full bg-[#100A06] text-[#F4E5B0] border border-[#D4AF37]/50 shadow-md overflow-hidden flex items-center justify-center focus:outline-none transition-transform active:scale-95 font-black text-sm" title="Panel Administrativo">
+                    @(User.Identity?.Name != null && User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpper() : "U")
+                </a>
+                <form asp-controller="Account" asp-action="Logout" method="post" id="mobileLogoutForm" class="m-0">
+                    <button type="submit" class="w-10 h-10 rounded-full bg-rose-950/60 text-rose-400 border border-rose-800/60 flex items-center justify-center hover:bg-rose-900/80 transition-colors" title="Cerrar Sesión">
+                        <span class="material-symbols-outlined text-lg">logout</span>
+                    </button>
+                </form>
+            </div>
+        </header>
+
+        <!-- Main Content with Watermark Integration -->
+        <main class="main-content lg:ml-80 px-4 sm:px-8 lg:px-12 relative z-10 pt-24 lg:pt-8 pb-28 lg:pb-16 min-h-screen">
+            <div class="max-w-7xl mx-auto">
+                @RenderBody()
+            </div>
+        </main>
+
+        <!-- Mobile Nav Bar -->
+        <nav class="mobile-nav-bar lg:hidden fixed bottom-4 left-4 right-4 h-20 bg-[#160E09]/95 backdrop-blur-2xl rounded-[26px] shadow-[0_12px_40px_rgba(0,0,0,0.8)] z-50 flex items-center justify-around px-2 border border-[#D4AF37]/25 overflow-x-auto hide-scrollbar">
+            <!-- Dashboard -->
+            <a class="flex flex-col items-center justify-center transition-all duration-300 w-12 sm:w-16 h-16 @(isDashboardActive ? "bg-[#2A1C14] text-[#F4E5B0] border border-[#D4AF37]/50 rounded-2xl shadow-md scale-105" : "text-[#A89F91] hover:text-white")" href="@Url.Action("Index", "Home")">
+                <span class="material-symbols-outlined text-xl @(isDashboardActive ? "FILL-1 text-[#D4AF37]" : "")">grid_view</span>
+                <span class="text-[7px] sm:text-[8px] font-bold tracking-tighter mt-0.5 whitespace-nowrap">Panel</span>
+            </a>
+
+            <!-- Customers -->
+            <a class="flex flex-col items-center justify-center transition-all duration-300 w-12 sm:w-16 h-16 @(isCustomersActive ? "bg-[#2A1C14] text-[#F4E5B0] border border-[#D4AF37]/50 rounded-2xl shadow-md scale-105" : "text-[#A89F91] hover:text-white")" href="@Url.Action("Index", "Clientes")">
+                <span class="material-symbols-outlined text-xl @(isCustomersActive ? "FILL-1 text-[#D4AF37]" : "")">group</span>
+                <span class="text-[7px] sm:text-[8px] font-bold tracking-tighter mt-0.5 whitespace-nowrap">Clientes</span>
+            </a>
+
+            <!-- Loans -->
+            <a class="flex flex-col items-center justify-center transition-all duration-300 w-12 sm:w-16 h-16 @(isLoansActive ? "bg-[#2A1C14] text-[#F4E5B0] border border-[#D4AF37]/50 rounded-2xl shadow-md scale-105" : "text-[#A89F91] hover:text-white")" href="@Url.Action("Index", "Prestamos")">
+                <span class="material-symbols-outlined text-xl @(isLoansActive ? "FILL-1 text-[#D4AF37]" : "")">payments</span>
+                <span class="text-[7px] sm:text-[8px] font-bold tracking-tighter mt-0.5 whitespace-nowrap">Préstamos</span>
+            </a>
+
+            <!-- Soporte -->
+            <a class="flex flex-col items-center justify-center transition-all duration-300 w-12 sm:w-16 h-16 @(isSoporteActive ? "bg-[#2A1C14] text-[#F4E5B0] border border-[#D4AF37]/50 rounded-2xl shadow-md scale-105" : "text-[#A89F91] hover:text-white")" href="@Url.Action("Index", "Soporte")">
+                <span class="material-symbols-outlined text-xl @(isSoporteActive ? "FILL-1 text-[#D4AF37]" : "")">support_agent</span>
+                <span class="text-[7px] sm:text-[8px] font-bold tracking-tighter mt-0.5 whitespace-nowrap">Soporte</span>
+            </a>
+
+            <!-- Settings -->
+            <a class="flex flex-col items-center justify-center transition-all duration-300 w-12 sm:w-16 h-16 @(isSettingsActive || isAdminActive ? "bg-[#2A1C14] text-[#F4E5B0] border border-[#D4AF37]/50 rounded-2xl shadow-md scale-105" : "text-[#A89F91] hover:text-white")" href="@Url.Action("Configuracion", "Notificaciones")">
+                <span class="material-symbols-outlined text-xl @(isSettingsActive || isAdminActive ? "FILL-1 text-[#D4AF37]" : "")">settings</span>
+                <span class="text-[7px] sm:text-[8px] font-bold tracking-tighter mt-0.5 whitespace-nowrap">Ajustes</span>
+            </a>
+        </nav>
+    }
+    else
+    {
+        <main class="min-h-screen relative z-10">
+            @RenderBody()
+        </main>
+    }
+
+    <script src="~/js/offline-sync.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+    <style>
+        .FILL-1 { font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 24 !important; }
+    </style>
+</body>
+</html>

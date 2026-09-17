@@ -1,0 +1,95 @@
+@{
+    ViewData["Title"] = "Enviar Ticket de Soporte";
+}
+
+<div class="max-w-3xl mx-auto space-y-8 pb-12">
+    <!-- Header -->
+    <div class="flex items-center gap-4">
+        <a href="@Url.Action("Index", "Soporte")" class="w-10 h-10 bg-slate-100 text-slate-700 rounded-xl flex items-center justify-center hover:bg-slate-200 transition-colors">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </a>
+        <div>
+            <h2 class="text-3xl font-black text-primary-container tracking-tighter">Nuevo Ticket de Soporte</h2>
+            <p class="text-xs font-bold text-secondary uppercase tracking-widest opacity-60">Describe el inconveniente o consulta para el equipo Master</p>
+        </div>
+    </div>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-700 rounded-2xl flex items-center gap-3 text-sm font-bold">
+            <span class="material-symbols-outlined text-rose-600">error</span>
+            <span>@ViewBag.ErrorMessage</span>
+        </div>
+    }
+
+    <form asp-action="Nuevo" asp-controller="Soporte" method="post" enctype="multipart/form-data" class="soft-card p-6 sm:p-10 space-y-6">
+        @Html.AntiForgeryToken()
+
+        <!-- Asunto / Título -->
+        <div class="space-y-2">
+            <label class="text-xs font-black text-primary-container uppercase tracking-wider block">
+                Asunto / Título del Inconveniente <span class="text-rose-500">*</span>
+            </label>
+            <input type="text" name="titulo" required placeholder="Ej: Error al generar comprobante de abono" class="soft-input w-full !py-3.5 !px-4 text-sm font-medium" />
+        </div>
+
+        <!-- Mensaje / Detalle -->
+        <div class="space-y-2">
+            <label class="text-xs font-black text-primary-container uppercase tracking-wider block">
+                Detalle del Problema o Solicitud <span class="text-rose-500">*</span>
+            </label>
+            <textarea name="mensaje" required rows="6" placeholder="Explique detalladamente qué ocurrió, qué acción realizaba y qué error visualizó..." class="soft-input w-full !py-3.5 !px-4 text-sm font-medium leading-relaxed"></textarea>
+        </div>
+
+        <!-- Adjunto (Captura de Pantalla o Foto) -->
+        <div class="space-y-2">
+            <label class="text-xs font-black text-primary-container uppercase tracking-wider block">
+                Adjuntar Captura de Pantalla (Opcional)
+            </label>
+            <div class="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center hover:border-primary-container/40 transition-colors bg-slate-50/50 relative">
+                <input type="file" name="imagen" id="imagenInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="previewImage(event)" />
+                <div class="space-y-2 pointer-events-none">
+                    <span class="material-symbols-outlined text-4xl text-slate-400">add_photo_alternate</span>
+                    <p class="text-xs font-bold text-slate-600">Haz clic o arrastra una imagen desde tu dispositivo</p>
+                    <p class="text-[10px] text-slate-400">Formatos soportados: PNG, JPG, JPEG, WEBP</p>
+                </div>
+            </div>
+            
+            <!-- Preview Contenedor -->
+            <div id="imagePreviewContainer" class="hidden mt-4 text-center">
+                <p class="text-xs font-bold text-slate-500 mb-2">Vista previa de la imagen:</p>
+                <img id="imagePreview" src="#" alt="Vista Previa" class="max-h-64 mx-auto rounded-xl shadow-md border border-slate-200 object-contain" />
+            </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="pt-6 border-t border-slate-100 flex items-center justify-end gap-4">
+            <a href="@Url.Action("Index", "Soporte")" class="soft-button soft-button-secondary !py-3 !px-6 text-xs font-black uppercase tracking-wider">
+                Cancelar
+            </a>
+            <button type="submit" class="soft-button soft-button-primary !py-3.5 !px-8 text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-xl">
+                <span class="material-symbols-outlined text-lg">send</span>
+                <span>Enviar Reporte de Soporte</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function previewImage(event) {
+        const input = event.target;
+        const container = document.getElementById('imagePreviewContainer');
+        const preview = document.getElementById('imagePreview');
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                container.classList.remove('hidden');
+            }
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            container.classList.add('hidden');
+        }
+    }
+</script>

@@ -1,0 +1,282 @@
+/* ===== CrediGest UI - Soft UI Design System ===== */
+:root {
+    --primary: #000613;
+    --primary-container: #001f3f;
+    --on-primary: #ffffff;
+    --background: #faf9fc;
+    --surface: #ffffff;
+    --surface-variant: #f4f3f6;
+    --on-surface: #1a1c1e;
+    --on-surface-variant: #43474e;
+    --outline: #74777f;
+    --outline-variant: #c4c6cf;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ba1a1a;
+    
+    /* Soft UI Tokens */
+    --radius-card: 1.5rem; /* 24px */
+    --radius-btn: 1rem;    /* 16px */
+    --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-premium: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+    --sidebar-width: 280px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== Global Styles ===== */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--background);
+    color: var(--on-surface);
+    margin: 0;
+    overflow-x: hidden;
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    background-color: var(--primary-container);
+    color: var(--on-primary);
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    padding: 2rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    border-radius: var(--radius-btn);
+    transition: var(--transition);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.sidebar-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.sidebar-link.active {
+    background-color: white;
+    color: var(--primary-container);
+    box-shadow: var(--shadow-soft);
+}
+
+.sidebar-link i {
+    font-size: 1.25rem;
+}
+
+/* ===== Layout Content ===== */
+.main-wrapper {
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+/* ===== Soft UI Cards ===== */
+.card {
+    background-color: var(--surface);
+    border-radius: var(--radius-card);
+    border: none;
+    box-shadow: var(--shadow-soft);
+    transition: var(--transition);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-premium);
+}
+
+/* ===== Dashboard Specific ===== */
+.metric-card {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    background: white;
+}
+
+.metric-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.metric-data .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--on-surface-variant);
+    font-weight: 600;
+}
+
+.metric-data .value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-container);
+}
+
+/* ===== Buttons ===== */
+.btn {
+    border-radius: var(--radius-btn);
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: var(--transition);
+    border: none;
+}
+
+.btn-primary {
+    background-color: var(--primary-container);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary);
+    transform: scale(1.02);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    .main-wrapper {
+        margin-left: 0;
+    }
+}
+.main-content { padding-top: 6rem; padding-bottom: 8rem; }   
+@media (min-width: 1024px) {   
+    .main-content { margin-left: 20rem; padding-top: 4rem; padding-bottom: 4rem; }   
+}   
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }   
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }   
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0, 31, 63, 0.1); border-radius: 10px; }
+
+/* Responsive mobile fallback utilities */
+@media (max-width: 1023px) {
+    .lg\:hidden {
+        display: block !important;
+    }
+    .lg\:block {
+        display: none !important;
+    }
+    .lg\:flex {
+        display: none !important;
+    }
+    .mobile-top-bar, .mobile-nav-bar {
+        display: flex !important;
+    }
+    
+    /* Neumorphism override for premium card-style on mobile */
+    .soft-card {
+        background: #ffffff !important;
+        border: 1px solid #f1f5f9 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.05) !important;
+        border-radius: 24px !important;
+        padding: 1.25rem !important;
+    }
+    .soft-card:hover {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+    }
+    .soft-card.\!p-0 {
+        padding: 0 !important;
+    }
+    .soft-card.\!p-8 {
+        padding: 1.25rem !important;
+    }
+    .soft-card.\!p-10 {
+        padding: 1.25rem !important;
+    }
+    
+    .soft-recessed, .soft-recessed-sm {
+        background: #f8fafc !important;
+        box-shadow: none !important;
+        border: 1px solid #f1f5f9 !important;
+        border-radius: 16px !important;
+        padding: 0.75rem !important;
+    }
+    
+    /* Input and Button mobile optimizations */
+    .soft-input {
+        background: #f8fafc !important;
+        box-shadow: none !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        padding: 0.75rem 1rem !important;
+        font-weight: 700 !important;
+    }
+    
+    .soft-button {
+        border-radius: 16px !important;
+        padding: 0.75rem 1.25rem !important;
+        box-shadow: none !important;
+    }
+    .soft-button-primary {
+        background: #001f3f !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 31, 63, 0.15) !important;
+    }
+    
+    /* Specific overrides for helper classes */
+    .soft-button.\!py-5 {
+        padding-top: 0.875rem !important;
+        padding-bottom: 0.875rem !important;
+    }
+    .soft-button.\!py-4 {
+        padding-top: 0.75rem !important;
+        padding-bottom: 0.75rem !important;
+    }
+    .soft-button.\!rounded-\[20px\] {
+        border-radius: 16px !important;
+    }
+    
+    /* Titles and typography adjustments on mobile */
+    h2.text-4xl {
+        font-size: 1.75rem !important;
+        line-height: 2.25rem !important;
+    }
+}
+@media (min-width: 1024px) {
+    .lg\:hidden {
+        display: none !important;
+    }
+    .lg\:block {
+        display: block !important;
+    }
+    .lg\:flex {
+        display: flex !important;
+    }
+    .mobile-top-bar, .mobile-nav-bar {
+        display: none !important;
+    }
+}

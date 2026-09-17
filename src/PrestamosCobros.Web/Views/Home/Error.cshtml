@@ -1,0 +1,10 @@
+@{
+    ViewData["Title"] = "Error Interno";
+}
+
+<div class="p-10">
+    <h1 class="text-3xl text-rose-600 font-bold">Ocurrió un error en el servidor.</h1>
+    <p class="mt-4"><strong>Ruta:</strong> @ViewBag.ExceptionPath</p>
+    <p class="mt-2 text-red-800 bg-red-50 p-4 rounded-xl"><strong>Mensaje:</strong> @ViewBag.ExceptionMessage</p>
+    <a href="/" class="mt-6 inline-block bg-primary-container text-white px-4 py-2 rounded">Volver al inicio</a>
+</div>

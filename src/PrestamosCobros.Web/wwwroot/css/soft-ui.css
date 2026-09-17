@@ -1,0 +1,318 @@
+:root {
+    /* Color Palette - La Chichera Jungles Bar Dark Luxury Theme */
+    --primary: #FFFFFF;
+    --primary-container: #F5EFEB;
+    --primary-gold: #D4AF37;
+    --gold-light: #F4E5B0;
+    --gold-dark: #8C6239;
+    --jungle-green: #1B4332;
+    --jungle-leaf: #2D6A4F;
+    --jungle-accent: #52B788;
+    --on-primary: #150E07;
+    
+    /* Dark Luxury Wood Backgrounds */
+    --background: #110A06;
+    --surface: #1C120B;
+    --surface-bright: #2C1D13;
+    --on-surface: #F5EFEB;
+    --secondary: #C8B89E;
+    --error: #FB7185;
+    --outline: rgba(212, 175, 55, 0.25);
+    
+    /* Dark Luxury Neumorphic Shadows */
+    --soft-raised-shadow: 0 16px 36px rgba(0, 0, 0, 0.7), 0 0 25px rgba(212, 175, 55, 0.06);
+    --soft-raised-shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.5);
+    --soft-recessed-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.8), 0 1px 1px rgba(212, 175, 55, 0.1);
+    --soft-recessed-shadow-sm: inset 0 2px 6px rgba(0, 0, 0, 0.7);
+    
+    --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html, body {
+    background: radial-gradient(circle at 50% 15%, #2A1C14 0%, #170E08 45%, #0A0604 100%) fixed !important;
+    color: var(--on-surface) !important;
+    font-family: 'Outfit', sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+}
+
+/* Marca de Agua Grabada en Madera Oscura */
+.chichera-watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(780px, 85vw);
+    height: min(780px, 85vh);
+    background-image: url('/img/logo_chichera.jpg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.085;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 0;
+    filter: contrast(1.35) brightness(0.9);
+}
+
+@media (min-width: 1024px) {
+    .chichera-watermark {
+        left: calc(50% + 10rem); /* Centrado en el área de trabajo compensando el sidebar de 20rem */
+    }
+}
+
+/* Luxury Dark Wood Cards */
+.soft-card {
+    background: linear-gradient(180deg, rgba(32, 20, 13, 0.88) 0%, rgba(20, 12, 8, 0.94) 100%) !important;
+    border-radius: 32px;
+    padding: 2rem;
+    box-shadow: var(--soft-raised-shadow) !important;
+    border: 1px solid rgba(212, 175, 55, 0.22) !important;
+    backdrop-filter: blur(16px);
+    transition: var(--transition-base);
+    color: #F5EFEB !important;
+}
+
+.soft-card:hover {
+    border-color: rgba(212, 175, 55, 0.45) !important;
+    box-shadow: 0 22px 48px rgba(0, 0, 0, 0.85), 0 0 35px rgba(212, 175, 55, 0.12) !important;
+}
+
+.soft-raised-sm { box-shadow: var(--soft-raised-shadow-sm) !important; }
+
+.soft-recessed {
+    background: rgba(13, 8, 5, 0.75) !important;
+    box-shadow: var(--soft-recessed-shadow) !important;
+    border: 1px solid rgba(212, 175, 55, 0.18) !important;
+    color: #F5EFEB !important;
+}
+
+.soft-recessed-sm {
+    background: rgba(13, 8, 5, 0.65) !important;
+    box-shadow: var(--soft-recessed-shadow-sm) !important;
+    border: 1px solid rgba(212, 175, 55, 0.15) !important;
+    color: #F5EFEB !important;
+}
+
+/* Form Inputs, Selects, and Textareas */
+.soft-input, input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+    background: rgba(13, 8, 5, 0.85) !important;
+    box-shadow: var(--soft-recessed-shadow-sm) !important;
+    border-radius: 20px !important;
+    padding: 0.85rem 1.25rem !important;
+    border: 1.5px solid rgba(212, 175, 55, 0.22) !important;
+    outline: none !important;
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    transition: var(--transition-base) !important;
+}
+
+.soft-input:focus, input:focus, select:focus, textarea:focus {
+    border-color: #D4AF37 !important;
+    box-shadow: 0 0 18px rgba(212, 175, 55, 0.35), inset 0 2px 6px rgba(0, 0, 0, 0.8) !important;
+    outline: none !important;
+}
+
+input::placeholder, textarea::placeholder {
+    color: #8C8275 !important;
+}
+
+/* Buttons */
+.soft-button {
+    background: linear-gradient(180deg, #2A1C13 0%, #1A1009 100%);
+    box-shadow: var(--soft-raised-shadow-sm);
+    border-radius: 20px;
+    padding: 1rem 2rem;
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    font-weight: 800;
+    color: #F4E5B0;
+    cursor: pointer;
+    transition: var(--transition-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.soft-button:hover {
+    border-color: rgba(212, 175, 55, 0.5);
+    color: #FFFFFF;
+    box-shadow: 0 10px 25px rgba(212, 175, 55, 0.2);
+}
+
+.soft-button:active {
+    box-shadow: var(--soft-recessed-shadow-sm);
+    transform: scale(0.97);
+}
+
+.soft-button-primary, .gold-btn {
+    background: linear-gradient(135deg, #F5E6B3 0%, #D4AF37 45%, #AA7C11 100%) !important;
+    color: #150E07 !important;
+    font-weight: 900 !important;
+    border: none !important;
+    box-shadow: 0 10px 25px rgba(184, 134, 11, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.4) !important;
+}
+
+.soft-button-primary:hover, .gold-btn:hover {
+    background: linear-gradient(135deg, #FFFFFF 0%, #F5E6B3 30%, #D4AF37 100%) !important;
+    box-shadow: 0 14px 32px rgba(212, 175, 55, 0.55) !important;
+    transform: translateY(-2px);
+}
+
+.soft-button-gold {
+    background: linear-gradient(135deg, #F4E5B0 0%, #D4AF37 50%, #B8860B 100%) !important;
+    color: #1A1008 !important;
+    font-weight: 900 !important;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(184, 134, 11, 0.35) !important;
+}
+
+.soft-button-gold:hover {
+    background: linear-gradient(135deg, #FFFFFF 0%, #F4E5B0 30%, #D4AF37 100%) !important;
+    box-shadow: 0 12px 28px rgba(212, 175, 55, 0.5) !important;
+    transform: translateY(-1px);
+}
+
+/* Tipografía en Oro Metálico Calado */
+.gold-gradient-text {
+    background: linear-gradient(135deg, #FFF5D1 0%, #F4E5B0 25%, #D4AF37 55%, #AA7C11 85%, #7A5408 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Tactile Switch */
+.soft-switch {
+    position: relative;
+    width: 60px;
+    height: 34px;
+}
+
+.soft-switch input { opacity: 0; width: 0; height: 0; }
+
+.soft-switch label {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #1A1009;
+    box-shadow: var(--soft-recessed-shadow-sm);
+    transition: .4s;
+    border-radius: 34px;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.soft-switch label:before {
+    position: absolute;
+    content: "";
+    height: 22px; width: 22px;
+    left: 6px; bottom: 6px;
+    background-color: #D4AF37;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+    transition: .4s;
+    border-radius: 50%;
+}
+
+.soft-switch input:checked + label {
+    background-color: #1B4332;
+    border-color: #52B788;
+}
+
+.soft-switch input:checked + label:before {
+    transform: translateX(26px);
+    background-color: #52B788;
+}
+
+/* Badge Styles */
+.soft-badge {
+    padding: 0.4rem 0.85rem;
+    border-radius: 14px;
+    font-size: 0.75rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: var(--soft-raised-shadow-sm);
+    background: rgba(30, 20, 13, 0.85);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    color: #F4E5B0;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.3); border-radius: 10px; }
+
+/* Global Dark Enhancements for Existing Views */
+.bg-white {
+    background: linear-gradient(180deg, rgba(32, 20, 13, 0.90) 0%, rgba(20, 12, 8, 0.95) 100%) !important;
+    border: 1px solid rgba(212, 175, 55, 0.22) !important;
+    color: #F5EFEB !important;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65) !important;
+}
+
+.bg-slate-50, .bg-slate-50\/50, .bg-slate-100, .bg-slate-200, .bg-gray-50, .bg-gray-100 {
+    background-color: transparent !important;
+}
+
+.text-slate-800, .text-slate-900, .text-primary-container, .text-primary, .text-gray-900, .text-gray-800 {
+    color: #F5EFEB !important;
+}
+
+.text-slate-700, .text-slate-600, .text-slate-500, .text-secondary, .text-gray-600, .text-gray-500 {
+    color: #C8B89E !important;
+}
+
+.text-slate-400, .text-gray-400 {
+    color: #8C8275 !important;
+}
+
+.border-slate-100, .border-slate-200, .border-slate-300, .border-gray-100, .border-gray-200, .border-surface-container-low, .border-surface-container {
+    border-color: rgba(212, 175, 55, 0.15) !important;
+}
+
+/* Status Badges */
+.bg-emerald-50, .bg-emerald-100, .bg-emerald-100\/50, .text-emerald-700, .text-emerald-800, .text-emerald-600 {
+    background-color: rgba(27, 67, 50, 0.75) !important;
+    color: #52B788 !important;
+    border-color: rgba(82, 183, 136, 0.35) !important;
+}
+
+.bg-rose-50, .bg-rose-100, .text-rose-700, .text-rose-800, .text-rose-600 {
+    background-color: rgba(76, 5, 25, 0.75) !important;
+    color: #FDA4AF !important;
+    border-color: rgba(244, 63, 94, 0.35) !important;
+}
+
+.bg-amber-50, .bg-amber-100, .text-amber-700, .text-amber-800, .text-amber-600 {
+    background-color: rgba(85, 40, 5, 0.75) !important;
+    color: #FDBA74 !important;
+    border-color: rgba(249, 115, 22, 0.35) !important;
+}
+
+/* Tables */
+table th {
+    background-color: rgba(22, 14, 9, 0.95) !important;
+    color: #D4AF37 !important;
+    font-weight: 800 !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.25) !important;
+}
+
+table td {
+    color: #F5EFEB !important;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.1) !important;
+}
+
+table tr:hover td {
+    background-color: rgba(212, 175, 55, 0.04) !important;
+}
+
+/* Modal Dialogs */
+.modal-content, [role="dialog"] {
+    background: linear-gradient(180deg, #241710 0%, #150E08 100%) !important;
+    border: 1px solid rgba(212, 175, 55, 0.35) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(212, 175, 55, 0.15) !important;
+    color: #F5EFEB !important;
+}

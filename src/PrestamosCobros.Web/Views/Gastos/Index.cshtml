@@ -1,0 +1,122 @@
+@model List<PrestamosCobros.BLL.DTOs.GastoListDto>
+<div class="space-y-10 pb-12 px-4">
+    @if (TempData["Exito"] != null)
+    {
+        <div class="flex items-center gap-4 p-5 rounded-[24px] bg-emerald-50 border border-emerald-100 text-emerald-800 soft-raised-sm mb-6 animate-pulse">
+            <span class="material-symbols-outlined text-emerald-600 text-2xl">check_circle</span>
+            <span class="text-xs font-black uppercase tracking-wider">@TempData["Exito"]</span>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="flex items-center gap-4 p-5 rounded-[24px] bg-rose-50 border border-rose-100 text-rose-800 soft-raised-sm mb-6 animate-pulse">
+            <span class="material-symbols-outlined text-rose-600 text-2xl">error</span>
+            <span class="text-xs font-black uppercase tracking-wider">@TempData["Error"]</span>
+        </div>
+    }
+
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div class="flex items-center gap-5">
+            <div class="w-16 h-16 bg-primary-container text-white rounded-[24px] flex items-center justify-center soft-raised-sm">
+                <span class="material-symbols-outlined text-4xl">receipt_long</span>
+            </div>
+            <div>
+                <h2 class="text-4xl font-black text-primary-container tracking-tighter">Gastos</h2>
+                <p class="text-secondary text-sm font-bold opacity-60">Control operativo de egresos</p>
+            </div>
+        </div>
+        <a href="@Url.Action("Crear")" class="w-16 h-16 bg-rose-500 text-white rounded-[24px] flex items-center justify-center shadow-[8px_8px_20px_rgba(244,63,94,0.3)] active:scale-90 transition-transform">
+            <span class="material-symbols-outlined text-4xl">add</span>
+        </a>
+    </div>
+
+    <!-- Monthly Stats Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Current Month -->
+        <div class="soft-card flex items-center justify-between p-6 bg-gradient-to-br from-rose-50/50 to-white border border-rose-100/30">
+            <div>
+                <p class="text-[10px] font-black text-rose-800 uppercase tracking-widest opacity-60 mb-1">Gasto Mes Actual</p>
+                <p class="text-2xl font-black text-rose-600 tracking-tight">₡@(((decimal)(ViewData["TotalMesActual"] ?? 0m)).ToString("N0"))</p>
+            </div>
+            <div class="w-12 h-12 bg-rose-100/60 text-rose-700 rounded-2xl flex items-center justify-center soft-raised-sm">
+                <span class="material-symbols-outlined text-2xl">calendar_month</span>
+            </div>
+        </div>
+        <!-- Previous Month -->
+        <div class="soft-card flex items-center justify-between p-6 bg-gradient-to-br from-slate-50/50 to-white border border-slate-100/30">
+            <div>
+                <p class="text-[10px] font-black text-slate-800 uppercase tracking-widest opacity-60 mb-1">Gasto Mes Anterior</p>
+                <p class="text-2xl font-black text-slate-700 tracking-tight">₡@(((decimal)(ViewData["TotalMesAnterior"] ?? 0m)).ToString("N0"))</p>
+            </div>
+            <div class="w-12 h-12 bg-slate-100/60 text-slate-600 rounded-2xl flex items-center justify-center soft-raised-sm">
+                <span class="material-symbols-outlined text-2xl">history</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="space-y-8">
+        @if (!Model.Any())
+        {
+            <div class="soft-card flex flex-col items-center justify-center py-20 soft-recessed opacity-50">
+                <span class="material-symbols-outlined text-7xl mb-4">inventory_2</span>
+                <p class="text-lg font-black text-primary-container uppercase tracking-widest">Sin Movimientos</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var group in Model.GroupBy(g => g.Fecha.Date).OrderByDescending(g => g.Key))
+            {
+                <div class="space-y-4">
+                    <div class="flex items-center gap-4 px-4">
+                        <div class="h-[2px] flex-1 bg-surface-container-low"></div>
+                        <span class="text-[10px] font-black text-primary-container uppercase tracking-[0.3em] opacity-40">
+                             @group.Key.ToString("dd MMMM, yyyy")
+                        </span>
+                        <div class="h-[2px] flex-1 bg-surface-container-low"></div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        @foreach (var item in group)
+                        {
+                            <div class="soft-card flex items-center justify-between group transition-all overflow-hidden relative">
+                                <div class="flex items-center gap-5 relative z-10">
+                                    <div class="w-14 h-14 rounded-[20px] bg-rose-50 text-rose-600 flex items-center justify-center soft-recessed-sm">
+                                        <span class="material-symbols-outlined text-3xl">shopping_cart</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-black text-primary-container leading-tight">@item.Descripcion</h3>
+                                        <p class="text-[10px] font-black text-secondary uppercase tracking-widest opacity-50">@item.Categoria • @item.Fecha.ToString("hh:mm tt")</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center gap-4 relative z-10">
+                                    <div class="text-right">
+                                        <p class="text-xl font-black text-rose-600 tracking-tighter">₡@item.Monto.ToString("N0")</p>
+                                        <p class="text-[9px] font-black text-secondary uppercase tracking-widest opacity-40">@item.UsuarioNombre</p>
+                                    </div>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <div class="flex flex-col gap-1 pl-3 border-l border-slate-100/50">
+                                            <a href="@Url.Action("Editar", new { id = item.GastoId })" class="text-secondary opacity-40 hover:opacity-100 hover:text-primary-container transition-opacity flex items-center justify-center w-8 h-8 rounded-lg hover:bg-slate-50" title="Editar Gasto">
+                                                <span class="material-symbols-outlined text-lg">edit</span>
+                                            </a>
+                                            <form asp-action="Eliminar" asp-route-id="@item.GastoId" method="post" onsubmit="return confirm('¿Está seguro de que desea eliminar este gasto?');" class="inline m-0 p-0">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="text-secondary opacity-40 hover:opacity-100 hover:text-rose-600 transition-opacity flex items-center justify-center w-8 h-8 rounded-lg hover:bg-slate-50" title="Eliminar Gasto">
+                                                    <span class="material-symbols-outlined text-lg">delete</span>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+

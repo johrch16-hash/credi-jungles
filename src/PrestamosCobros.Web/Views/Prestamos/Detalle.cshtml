@@ -1,0 +1,911 @@
+@model PrestamosCobros.BLL.DTOs.PrestamoDetalleDto
+<div class="space-y-10 pb-12 px-4">
+    <!-- Header -->
+    <div class="flex items-center justify-between flex-wrap gap-4">
+        <div class="flex items-center gap-6">
+            <a href="@Url.Action("Index")" class="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-secondary hover:text-primary-container transition-all active:scale-90">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <div class="flex items-center gap-5">
+                <div class="w-16 h-16 bg-primary-container text-white rounded-[24px] flex items-center justify-center soft-raised-sm">
+                    <span class="material-symbols-outlined text-4xl">receipt_long</span>
+                </div>
+                <div>
+                    <h2 class="text-4xl font-black text-primary-container tracking-tighter">
+                        @(Model.NombreAlias ?? $"Crédito #{Model.PrestamoId}")
+                    </h2>
+                    <div class="flex items-center gap-3 mt-1">
+                        <span class="soft-badge @(Model.Estado == "Activo" ? "bg-emerald-100 text-emerald-700" : "bg-primary-container/10 text-primary-container")">
+                            @Model.Estado.ToUpper()
+                        </span>
+                        <span class="soft-badge bg-blue-100 text-blue-700">
+                            @(Model.TipoCredito ?? "CUOTA COMPLETA")
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @if (Model.Estado == "Activo" && Model.SaldoPendiente > 0 && Model.Cuotas.Any(c => c.Estado == "Pendiente"))
+        {
+            var primeraCuotaPendiente = Model.Cuotas.FirstOrDefault(c => c.Estado == "Pendiente");
+            <div class="flex items-center gap-3">
+                @if (User.IsInRole("Admin") || User.IsInRole("Master"))
+                {
+                    <button type="button" 
+                            onclick="document.getElementById('modalAbonoCapital').classList.remove('hidden')"
+                            class="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-sm transition-all active:scale-95 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-lg">account_balance_wallet</span>
+                        Abono a Capital
+                    </button>
+                }
+                <button type="button" 
+                        onclick="document.getElementById('modalAbonoCapital').classList.remove('hidden')"
+                        class="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-sm transition-all active:scale-95 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg">account_balance_wallet</span>
+                    Abono a Capital
+                </button>
+                <button type="button" 
+                        onclick="confirmarLiquidacionTotal(@primeraCuotaPendiente?.CuotaId, @Model.SaldoPendiente)"
+                        class="px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-sm transition-all active:scale-95 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg">paid</span>
+                    Liquidación Total
+                </button>
+            </div>
+        }
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <!-- Sidebar: Info Principal -->
+        <div class="lg:col-span-4 space-y-8">
+            <div class="soft-card !p-8">
+                <h3 class="text-[11px] font-black text-secondary uppercase tracking-[0.2em] mb-6 opacity-40">Perfil del Cliente</h3>
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-14 h-14 rounded-[20px] bg-surface flex items-center justify-center soft-recessed-sm text-primary-container font-black text-xl">
+                        @Model.ClienteNombre[0]
+                    </div>
+                    <div>
+                        <a href="@Url.Action("Detalle", "Clientes", new { id = Model.ClienteId })" class="text-lg font-black text-primary-container leading-tight hover:underline">
+                            @Model.ClienteNombre
+                        </a>
+                        <p class="text-xs font-bold text-secondary opacity-60">@Model.ClienteTelefono</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6 pt-6 border-t-2 border-surface-container-low border-dashed">
+                    <div class="space-y-1">
+                        <p class="text-[9px] font-black text-secondary uppercase tracking-widest opacity-40">Prestado</p>
+                        <p class="text-base font-black text-primary-container">₡@Model.MontoPrestado.ToString("N0")</p>
+                    </div>
+                    <div class="space-y-1 text-right">
+                        <p class="text-[9px] font-black text-secondary uppercase tracking-widest opacity-40">Interés</p>
+                        <p class="text-base font-black text-amber-600">@Model.PorcentajeInteres%</p>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-[9px] font-black text-secondary uppercase tracking-widest opacity-40">Total Proyectado</p>
+                        <p class="text-base font-black text-primary-container">₡@Model.MontoTotal.ToString("N0")</p>
+                    </div>
+                    <div class="space-y-1 text-right">
+                        <p class="text-[9px] font-black text-secondary uppercase tracking-widest opacity-40">Saldo Pendiente</p>
+                        <p class="text-base font-black @(Model.SaldoPendiente > 0 ? "text-rose-600" : "text-emerald-600")">₡@Model.SaldoPendiente.ToString("N0")</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progreso -->
+            <div class="soft-card !p-8">
+                @{
+                    var cuotasNormales = Model.Cuotas.Where(c => c.NumeroCuota > 0).ToList();
+                    var pagadas = cuotasNormales.Count(c => c.Estado == "Pagado");
+                    var total = cuotasNormales.Count;
+                    var progreso = total > 0 ? (pagadas * 100 / total) : 0;
+
+                    var cuotasInteres = Model.Cuotas.Where(c => c.NumeroCuota == 0 && c.Estado != "Pendiente").ToList();
+                    var interesPagado = cuotasInteres.Sum(c => c.MontoPagado ?? 0);
+                    var vecesInteres = cuotasInteres.Count;
+                    
+                    var esSoloInteres = Model.TipoCredito == "Solo Interés";
+                }
+                
+                @if (esSoloInteres)
+                {
+                    var cuotasPagas = Model.Cuotas.Where(c => c.Estado == "Pagado").ToList();
+                    var totalPagas = cuotasPagas.Count;
+                    var sumaPagada = cuotasPagas.Sum(c => c.MontoPagado ?? 0);
+
+                    <div class="flex justify-between items-end mb-4">
+                        <h3 class="text-[11px] font-black text-secondary uppercase tracking-[0.2em] opacity-40">Resumen de Pagos</h3>
+                        <span class="text-2xl font-black text-primary-container">@totalPagas <span class="text-[10px] uppercase opacity-40 font-bold ml-1">Cuotas</span></span>
+                    </div>
+                    <div class="w-full bg-emerald-50 rounded-[20px] p-5 flex flex-col items-center justify-center border border-emerald-100/50 shadow-inner mt-4">
+                         <p class="text-[10px] font-black text-emerald-600/70 uppercase tracking-widest">Total Abonado a la Fecha</p>
+                         <p class="text-xl font-black text-emerald-600 mt-1">₡@sumaPagada.ToString("N0")</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="flex justify-between items-end mb-4">
+                        <h3 class="text-[11px] font-black text-secondary uppercase tracking-[0.2em] opacity-40">Progreso de Pago</h3>
+                        <span class="text-2xl font-black text-primary-container">@progreso%</span>
+                    </div>
+                    <div class="w-full h-4 bg-surface rounded-full soft-recessed-sm p-1 overflow-hidden">
+                        <div class="h-full bg-primary-container rounded-full shadow-lg transition-all duration-1000" style="width: @progreso%"></div>
+                    </div>
+                    <p class="text-center text-[10px] font-black text-secondary uppercase tracking-widest mt-4 opacity-40">
+                        @pagadas de @total cuotas liquidadas
+                    </p>
+
+                    @if (vecesInteres > 0)
+                    {
+                        <div class="mt-6 pt-4 border-t border-surface-container-low border-dashed flex justify-between items-center">
+                            <div class="space-y-1">
+                                <p class="text-[9px] font-black text-secondary uppercase tracking-widest opacity-40">Abonos a Interés</p>
+                                <p class="text-xs font-black text-primary-container">@vecesInteres efectuados</p>
+                            </div>
+                            <div class="text-right space-y-1">
+                                <p class="text-[9px] font-black text-secondary uppercase tracking-widest opacity-40">Total Pagado</p>
+                                <p class="text-xs font-black text-emerald-600">₡@interesPagado.ToString("N0")</p>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+
+            <!-- Detalles Técnicos -->
+            <div class="soft-card !p-8 space-y-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-secondary opacity-40">calendar_today</span>
+                        <span class="text-xs font-bold text-primary-container opacity-60">Frecuencia</span>
+                    </div>
+                    <span class="text-xs font-black text-primary-container uppercase">Cada @Model.PeriodicidadDias días</span>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.NumeroSinpe))
+                {
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-secondary opacity-40">phonelink_ring</span>
+                            <span class="text-xs font-bold text-primary-container opacity-60">SINPE</span>
+                        </div>
+                        <span class="text-xs font-black text-primary-container">@Model.NumeroSinpe</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Main Content: Plan de Pagos -->
+        <div class="lg:col-span-8">
+            <div class="soft-card overflow-hidden">
+                <div class="p-8 border-b-2 border-surface-container-low border-dashed flex justify-between items-center flex-wrap gap-4">
+                    <div class="flex items-center gap-3">
+                        <h3 class="text-xl font-black text-primary-container tracking-tighter">Cronograma de Cuotas</h3>
+                        <span class="material-symbols-outlined text-secondary opacity-20">schedule</span>
+                    </div>
+                    
+                    @if (Model.Estado == "Activo" && Model.SaldoPendiente > 0 && (User.IsInRole("Admin") || User.IsInRole("Master")))
+                    {
+                        var primeraPendiente = Model.Cuotas.FirstOrDefault(c => c.Estado != "Pagado");
+                        if (primeraPendiente != null)
+                        {
+                            <form action="@Url.Action("RegistrarPago", "Prestamos")" method="post" class="m-0 p-0" onsubmit="return confirm('¿Está seguro de registrar el pago total por ₡@Model.SaldoPendiente.ToString("N0")? Esto liquidará el préstamo por completo.');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="cuotaId" value="@primeraPendiente.CuotaId" />
+                                <input type="hidden" name="montoPagado" value="@Math.Round(Model.SaldoPendiente, 0, MidpointRounding.AwayFromZero).ToString("0")" />
+                                <input type="hidden" name="prestamoId" value="@Model.PrestamoId" />
+                                <button type="submit" class="soft-button !bg-emerald-50 !text-emerald-600 !border-emerald-100 !py-2 !px-4 text-[10px] font-black tracking-widest uppercase hover:bg-emerald-100 flex items-center gap-2 shadow-sm" title="Liquidar todo el saldo pendiente">
+                                    <span class="material-symbols-outlined text-sm">done_all</span>
+                                    Liquidación Total
+                                </button>
+                            </form>
+                        }
+                    }
+                </div>
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left bg-surface-container-low/30">
+                                <th class="px-4 py-5 text-[9px] font-black text-secondary uppercase tracking-widest opacity-40 w-16">#</th>
+                                <th class="px-2 py-5 text-[9px] font-black text-secondary uppercase tracking-widest opacity-40">Monto</th>
+                                <th class="px-2 py-5 text-[9px] font-black text-secondary uppercase tracking-widest opacity-40">Vencimiento</th>
+                                <th class="px-2 py-5 text-[9px] font-black text-secondary uppercase tracking-widest opacity-40">Pagado</th>
+                                <th class="px-4 py-5 text-[9px] font-black text-secondary uppercase tracking-widest opacity-40 text-left">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-container-low">
+                            @foreach (var c in Model.Cuotas)
+                            {
+                                // Si la cuota está anulada, o es una cuota de interés antigua que quedó pendiente, la ocultamos
+                                if (c.Estado == "Anulado" || (c.NumeroCuota == 0 && c.Estado == "Pendiente")) continue;
+
+                                var esAtrasado = c.Estado == "Pendiente" && c.FechaVencimiento < DateTime.UtcNow;
+                                var numeroDisplay = c.NumeroCuota == 0 ? "INT" : c.NumeroCuota.ToString("D2");
+                                <tr class="group hover:bg-surface-container-low/20 transition-colors">
+                                    <td class="px-4 py-4">
+                                        <span class="text-xs font-black text-primary-container opacity-30">@numeroDisplay</span>
+                                    </td>
+                                    <td class="px-2 py-4 text-xs font-black text-primary-container">₡@c.Monto.ToString("N0")</td>
+                                    <td class="px-2 py-4">
+                                        <div class="flex flex-col">
+                                            <span class="text-xs font-bold text-primary-container">@c.FechaVencimiento.ToString("dd MMM, yyyy")</span>
+                                            @if (esAtrasado)
+                                            {
+                                                var dias = (DateTime.UtcNow - c.FechaVencimiento).Days;
+                                                <span class="text-[9px] font-black text-rose-600 uppercase tracking-widest mt-1">@dias DÍAS MORA</span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="px-2 py-4">
+                                        @if (c.FechaPago.HasValue)
+                                        {
+                                            <div class="flex flex-col">
+                                                <span class="text-xs font-bold text-emerald-600">
+                                                    ₡@c.MontoPagado?.ToString("N0")
+                                                    @if(c.NumeroCuota == 0) { <span class="text-[9px] uppercase tracking-widest opacity-60 ml-1">(Interés)</span> }
+                                                </span>
+                                                <span class="text-[9px] font-bold text-secondary opacity-40 mt-1">@c.FechaPago.Value.ToString("dd/MM/yy")</span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="soft-badge @(esAtrasado ? "bg-rose-50 text-rose-600" : "bg-surface text-secondary opacity-40") uppercase text-[9px] font-black">
+                                                @(esAtrasado ? "Pendiente" : "Pendiente")
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="px-4 py-4 text-left">
+                                         @if (c.Estado != "Pagado" && Model.Estado == "Activo" && User.IsInRole("Admin"))
+                                         {
+                                             <div class="payment-container flex items-center justify-start gap-2" data-cuota-id="@c.CuotaId">
+                                                 <button type="button" class="btn-activar-pago w-10 h-10 rounded-[12px] bg-primary-container text-white flex items-center justify-center shadow-lg hover:scale-105 transition-transform" title="Registrar Pago">
+                                                     <span class="material-symbols-outlined text-xl">payments</span>
+                                                 </button>
+                                                 
+                                                 <button type="button" class="btn-notificar-whatsapp w-10 h-10 rounded-[12px] bg-[#25D366] text-white flex items-center justify-center shadow-lg hover:scale-105 transition-transform" title="Enviar Recordatorio WhatsApp" data-cuota-id="@c.CuotaId">
+                                                     <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                                                 </button>
+                                                 <button type="button" class="btn-notificar-email w-10 h-10 rounded-[12px] bg-primary text-white flex items-center justify-center shadow-lg hover:scale-105 transition-transform" title="Notificar por Correo Electrónico" data-cuota-id="@c.CuotaId">
+                                                     <span class="material-symbols-outlined text-xl">mail</span>
+                                                 </button>
+                                                 @if (User.IsInRole("Master"))
+                                                 {
+                                                     <button type="button" class="btn-editar-cuota w-10 h-10 rounded-[12px] bg-amber-500 text-white flex items-center justify-center shadow-lg hover:scale-105 transition-transform" title="Editar Monto" data-cuota-id="@c.CuotaId" data-monto="@c.Monto">
+                                                         <span class="material-symbols-outlined text-xl">edit</span>
+                                                     </button>
+                                                     <button type="button" class="btn-eliminar-cuota w-10 h-10 rounded-[12px] bg-rose-500 text-white flex items-center justify-center shadow-lg hover:scale-105 transition-transform" title="Eliminar Cuota" data-cuota-id="@c.CuotaId">
+                                                         <span class="material-symbols-outlined text-xl">delete</span>
+                                                     </button>
+                                                 }
+                                                <div class="payment-controls hidden flex flex-col gap-2 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                    <div class="flex items-center gap-2">
+                                                        <div class="relative w-28">
+                                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-primary-container">₡</span>
+                                                            <input type="number" class="payment-amount w-full bg-white border-0 rounded-xl py-2 pl-6 pr-2 text-xs font-black text-primary-container soft-raised-sm" value="@c.Monto" step="0.01" />
+                                                        </div>
+                                                        <button type="button" class="btn-confirmar-pago w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-sm hover:bg-emerald-600 transition-colors">
+                                                            <span class="material-symbols-outlined text-lg">check</span>
+                                                        </button>
+                                                        <button type="button" class="btn-cancelar-pago w-8 h-8 rounded-lg bg-white text-secondary flex items-center justify-center shadow-sm hover:text-rose-500 transition-colors">
+                                                            <span class="material-symbols-outlined text-lg">close</span>
+                                                        </button>
+                                                    </div>
+                                                    @if (Model.TipoCredito == "Cuota Completa")
+                                                    {
+                                                        var totalCuotas = Model.Cuotas.Count(x => x.NumeroCuota > 0);
+                                                        var montoInteres = totalCuotas > 0 ? Math.Round((Model.MontoTotal - Model.MontoPrestado) / totalCuotas, 0) : 0;
+                                                        <label class="flex items-center gap-2 cursor-pointer mt-1">
+                                                            <input type="checkbox" class="cb-solo-interes accent-emerald-600 w-3 h-3" 
+                                                                   data-normal="@Math.Round(c.Monto, 0, MidpointRounding.AwayFromZero).ToString("0")" 
+                                                                   data-interes="@Math.Round(montoInteres, 0, MidpointRounding.AwayFromZero).ToString("0")" />
+                                                            <span class="text-[9px] font-black uppercase text-secondary">Abono solo interés</span>
+                                                        </label>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (c.Estado == "Pagado")
+                                        {
+                                            <div class="flex items-center gap-2">
+                                                <a href="@Url.Action("Comprobante", new { id = c.CuotaId })" class="w-10 h-10 rounded-[12px] bg-surface text-primary-container flex items-center justify-center soft-raised-sm hover:soft-recessed-sm transition-all" title="Comprobante">
+                                                    <span class="material-symbols-outlined text-xl">receipt</span>
+                                                </a>
+                                                @if (User.IsInRole("Admin") || User.IsInRole("Master"))
+                                                {
+                                                    <button type="button" onclick="mostrarModalAnularPago(@c.CuotaId, @Model.PrestamoId)" class="w-10 h-10 rounded-[12px] bg-rose-50 text-rose-500 border border-rose-100 flex items-center justify-center shadow-sm hover:scale-105 transition-transform" title="Anular Pago">
+                                                        <span class="material-symbols-outlined text-xl">do_not_disturb_on</span>
+                                                    </button>
+                                                }
+                                            </div>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    </div>
+
+    <!-- Zona de Peligro -->
+    @if (User.IsInRole("Admin") || User.IsInRole("Master"))
+    {
+        <div class="mt-20 pt-10 border-t border-dashed border-secondary/10 opacity-40 hover:opacity-100 transition-opacity">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6 bg-white/50 p-8 rounded-[32px]">
+                <div>
+                    <h4 class="text-xs font-black text-secondary uppercase tracking-widest">Zona de Peligro</h4>
+                    <p class="text-xs text-secondary mt-1">Acciones administrativas del crédito</p>
+                </div>
+                
+                <div class="flex flex-wrap items-center gap-4">
+                    @if (Model.Estado == "Activo" && User.IsInRole("Admin"))
+                    {
+                        <form asp-action="Cancelar" asp-route-id="@Model.PrestamoId" method="post" class="m-0 p-0">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="soft-button !bg-amber-50 !text-amber-600 !border-amber-100 !py-3 !px-6 text-[10px] font-black tracking-widest uppercase hover:bg-amber-100">
+                                <span class="material-symbols-outlined text-lg">cancel</span>
+                                Cancelar
+                            </button>
+                        </form>
+
+                        <button type="button" class="soft-button !bg-blue-50 !text-blue-600 !border-blue-100 !py-3 !px-6 text-[10px] font-black tracking-widest uppercase hover:bg-blue-100" onclick="alert('Funcionalidad de edición en desarrollo')">
+                            <span class="material-symbols-outlined text-lg">edit</span>
+                            Editar
+                        </button>
+
+                        <button type="button" onclick="document.getElementById('modalRenovar').classList.remove('hidden')" class="soft-button !bg-indigo-50 !text-indigo-600 !border-indigo-100 !py-3 !px-6 text-[10px] font-black tracking-widest uppercase hover:bg-indigo-100">
+                            <span class="material-symbols-outlined text-lg">autorenew</span>
+                            Renovar Crédito
+                        </button>
+                    }
+                    else if (Model.Estado == "Cancelado" && User.IsInRole("Admin"))
+                    {
+                        <form asp-action="Reactivar" asp-route-id="@Model.PrestamoId" method="post" class="m-0 p-0">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="soft-button !bg-emerald-50 !text-emerald-600 !border-emerald-100 !py-3 !px-6 text-[10px] font-black tracking-widest uppercase hover:bg-emerald-100">
+                                <span class="material-symbols-outlined text-lg">refresh</span>
+                                Reactivar Crédito
+                            </button>
+                        </form>
+                    }
+
+                    @if (User.IsInRole("Master") || (User.IsInRole("Admin") && Model.Estado != "Activo"))
+                    {
+                        <form method="post" action="@Url.Action("Eliminar", "Prestamos")" onsubmit="return confirm('¿Está seguro que desea eliminar este crédito permanentemente? Se eliminarán cuotas y pagos asociados.');" class="inline m-0 p-0">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.PrestamoId" />
+                            <button type="submit" class="soft-button !bg-rose-50 !text-rose-600 !border-rose-100 !py-3 !px-6 text-[10px] font-black tracking-widest uppercase hover:bg-rose-100">
+                                <span class="material-symbols-outlined text-lg">delete_forever</span>
+                                Eliminar Definitivo
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Token Global para AJAX -->
+@Html.AntiForgeryToken()
+<input type="hidden" id="globalPrestamoId" value="@Model.PrestamoId" />
+
+<!-- Modal Renovar Crédito -->
+<div id="modalRenovar" class="hidden fixed inset-0 bg-secondary/80 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in duration-200">
+    <div class="bg-surface w-full max-w-lg rounded-[32px] p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        <button type="button" onclick="document.getElementById('modalRenovar').classList.add('hidden')" class="absolute top-6 right-6 w-10 h-10 bg-surface-container-low rounded-xl flex items-center justify-center text-secondary hover:text-rose-500 hover:bg-rose-50 transition-colors">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        
+        <h3 class="text-2xl font-black text-primary-container mb-2 tracking-tighter">Renovar Crédito</h3>
+        <p class="text-xs text-secondary font-bold opacity-60 mb-8">Esto cancelará el crédito actual marcándolo como "Renovado" y creará uno nuevo consolidado.</p>
+        
+        <form id="formRenovar" class="space-y-6">
+            <div class="space-y-3">
+                <label class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Nuevo Tipo de Crédito</label>
+                <select id="rnTipoCredito" class="soft-input !py-4 w-full">
+                    <option value="Cuota Completa" selected="@(Model.TipoCredito == "Cuota Completa")">Cuota Completa (Tradicional)</option>
+                    <option value="Solo Interés" selected="@(Model.TipoCredito == "Solo Interés")">Solo Interés (Capital Diferido)</option>
+                </select>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-3">
+                    <label class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Saldo Actual</label>
+                    <input type="number" id="rnSaldoActual" class="soft-input !py-4 w-full bg-surface-container opacity-70" readonly value="@Math.Round(Model.SaldoPendiente, 0).ToString("0")" />
+                </div>
+                <div class="space-y-3">
+                    <label class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Adicional Solicitado</label>
+                    <input type="number" id="rnMontoAdicional" class="soft-input !py-4 w-full" step="1" value="0" />
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <label class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Nuevo Capital (Consolidado)</label>
+                <input type="number" id="rnMontoPrestado" class="soft-input !py-4 w-full font-black text-emerald-600 bg-emerald-50" step="1" value="@Math.Round(Model.SaldoPendiente, 0).ToString("0")" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-3">
+                    <label class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Interés (%)</label>
+                    <input type="number" id="rnInteres" class="soft-input !py-4 w-full" step="1" value="@Math.Round(Model.PorcentajeInteres, 0).ToString("0")" />
+                </div>
+                <div class="space-y-3">
+                    <label class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Cuotas</label>
+                    <input type="number" id="rnCuotas" class="soft-input !py-4 w-full" min="1" value="@Model.Cuotas.Count" />
+                </div>
+                <div class="space-y-3">
+                    <label class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Ciclo</label>
+                    <select id="rnCiclo" class="soft-input !py-4 w-full">
+                        <option value="7" selected="@(Model.PeriodicidadDias == 7)">Semanal</option>
+                        <option value="15" selected="@(Model.PeriodicidadDias == 15)">Quincenal</option>
+                        <option value="30" selected="@(Model.PeriodicidadDias == 30)">Mensual</option>
+                    </select>
+                </div>
+                <div class="space-y-3">
+                    <label class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Fecha Inicio</label>
+                    <input type="date" id="rnFecha" class="soft-input !py-4 w-full" value="@DateTime.UtcNow.ToString("yyyy-MM-dd")" />
+                </div>
+            </div>
+
+            <div class="pt-6">
+                <button type="submit" id="btnEjecutarRenovacion" class="soft-button soft-button-primary !w-full !py-5 flex items-center justify-center gap-3 font-black text-xs tracking-widest shadow-xl">
+                    <span class="material-symbols-outlined">autorenew</span>
+                    CONSOLIDAR Y RENOVAR
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Abono a Capital -->
+<div id="modalAbonoCapital" class="hidden fixed inset-0 bg-secondary/80 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in duration-200">
+    <div class="bg-surface w-full max-w-sm rounded-[32px] p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        <button type="button" onclick="document.getElementById('modalAbonoCapital').classList.add('hidden')" class="absolute top-6 right-6 w-10 h-10 bg-surface-container-low rounded-xl flex items-center justify-center text-secondary hover:text-rose-500 hover:bg-rose-50 transition-colors">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        
+        <h3 class="text-2xl font-black text-primary-container mb-2 tracking-tighter">Abono a Capital</h3>
+        <p class="text-xs text-secondary font-bold opacity-60 mb-8">Ingrese el monto del abono extraordinario a capital. Las cuotas pendientes serán recalculadas.</p>
+        
+        <form asp-action="AbonoCapital" asp-controller="Prestamos" method="post" class="space-y-6" onsubmit="return confirm('¿Está seguro de registrar este abono a capital? Esta acción recalculará las cuotas pendientes.')">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.PrestamoId" />
+            
+            <div class="space-y-3">
+                <label class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Capital Actual</label>
+                <input type="text" class="soft-input !py-4 w-full bg-surface-container opacity-70" readonly value="₡@Model.MontoPrestado.ToString("N0")" />
+            </div>
+
+            <div class="space-y-3">
+                <label class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Monto del Abono (₡)</label>
+                <input type="number" name="montoAbono" class="soft-input !py-4 w-full font-black text-amber-600 bg-amber-50" step="1" min="1" max="@(Model.MontoPrestado - 1)" required placeholder="Ej. 50000" />
+            </div>
+
+            <div class="pt-6">
+                <button type="submit" class="soft-button !bg-amber-500 !text-white !border-amber-600 !w-full !py-5 flex items-center justify-center gap-3 font-black text-xs tracking-widest shadow-xl hover:bg-amber-600">
+                    <span class="material-symbols-outlined">account_balance_wallet</span>
+                    REGISTRAR ABONO
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    async function confirmarLiquidacionTotal(cuotaId, montoTotal) {
+        if (!confirm('¿Está seguro de que desea registrar la liquidación total por ₡' + montoTotal.toLocaleString('es-CR') + '?')) {
+            return;
+        }
+
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        const prestamoId = @Model.PrestamoId;
+        
+        try {
+            const formData = new URLSearchParams();
+            formData.append('cuotaId', cuotaId);
+            formData.append('montoPagado', montoTotal);
+            formData.append('prestamoId', prestamoId);
+            formData.append('__RequestVerificationToken', token);
+
+            const response = await fetch('/Prestamos/RegistrarPago', {
+                method: 'POST',
+                headers: { 
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+            if (data.exito) {
+                window.location.href = `/Prestamos/Comprobante/${cuotaId}`;
+            } else {
+                alert('Error: ' + data.mensaje);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error de conexión');
+        }
+    }
+
+    document.addEventListener('change', (e) => {
+        if (e.target.classList.contains('cb-solo-interes')) {
+            const container = e.target.closest('.payment-controls');
+            const inputMonto = container.querySelector('.payment-amount');
+            if (e.target.checked) {
+                inputMonto.value = e.target.getAttribute('data-interes');
+                inputMonto.classList.add('!bg-orange-50', '!text-orange-600');
+            } else {
+                inputMonto.value = e.target.getAttribute('data-normal');
+                inputMonto.classList.remove('!bg-orange-50', '!text-orange-600');
+            }
+        }
+    });
+
+    document.addEventListener('click', async (e) => {
+        const btnActivar = e.target.closest('.btn-activar-pago');
+        const btnCancelar = e.target.closest('.btn-cancelar-pago');
+        const btnConfirmar = e.target.closest('.btn-confirmar-pago');
+
+        if (btnActivar) {
+            const container = btnActivar.closest('.payment-container');
+            btnActivar.classList.add('hidden');
+            container.querySelector('.payment-controls').classList.remove('hidden');
+        }
+
+        if (btnCancelar) {
+            const container = btnCancelar.closest('.payment-container');
+            container.querySelector('.payment-controls').classList.add('hidden');
+            container.querySelector('.btn-activar-pago').classList.remove('hidden');
+        }
+
+        if (btnConfirmar) {
+            if (btnConfirmar.getAttribute('data-processing') === 'true') return;
+            btnConfirmar.setAttribute('data-processing', 'true');
+
+            const container = btnConfirmar.closest('.payment-container');
+            const cuotaId = container.getAttribute('data-cuota-id');
+            const monto = container.querySelector('.payment-amount').value;
+            const prestamoId = document.getElementById('globalPrestamoId').value;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            btnConfirmar.disabled = true;
+            btnConfirmar.innerHTML = '<svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+
+            const cbSoloInteres = container.querySelector('.cb-solo-interes');
+            const esSoloInteres = cbSoloInteres ? cbSoloInteres.checked : false;
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('cuotaId', cuotaId);
+                formData.append('montoPagado', monto);
+                formData.append('prestamoId', prestamoId);
+                formData.append('__RequestVerificationToken', token);
+                if (esSoloInteres) {
+                    formData.append('esPagoSoloInteres', 'true');
+                }
+
+                const response = await fetch('/Prestamos/RegistrarPago', {
+                    method: 'POST',
+                    headers: { 
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (data.exito) {
+                    window.location.href = `/Prestamos/Comprobante/${cuotaId}`;
+                } else {
+                    alert('Error: ' + data.mensaje);
+                    btnConfirmar.disabled = false;
+                    btnConfirmar.removeAttribute('data-processing');
+                    btnConfirmar.innerHTML = '<span class="material-symbols-outlined text-lg">check</span>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error de conexión');
+                btnConfirmar.disabled = false;
+                btnConfirmar.removeAttribute('data-processing');
+                btnConfirmar.innerHTML = '<span class="material-symbols-outlined text-lg">check</span>';
+            }
+        }
+
+        const btnWhatsapp = e.target.closest('.btn-notificar-whatsapp');
+        if (btnWhatsapp) {
+            const cuotaId = btnWhatsapp.getAttribute('data-cuota-id');
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            btnWhatsapp.disabled = true;
+            const originalContent = btnWhatsapp.innerHTML;
+            btnWhatsapp.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('cuotaId', cuotaId);
+                formData.append('__RequestVerificationToken', token);
+                
+                const response = await fetch('/Notificaciones/EnviarManual', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert(data.message);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error de conexión');
+            } finally {
+                btnWhatsapp.disabled = false;
+                btnWhatsapp.innerHTML = originalContent;
+            }
+        }
+
+        const btnEmail = e.target.closest('.btn-notificar-email');
+        if (btnEmail) {
+            const cuotaId = btnEmail.getAttribute('data-cuota-id');
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            btnEmail.disabled = true;
+            const originalContent = btnEmail.innerHTML;
+            btnEmail.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('cuotaId', cuotaId);
+                formData.append('__RequestVerificationToken', token);
+                
+                const response = await fetch('/Notificaciones/EnviarCorreoManual', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert(data.message);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error de conexión o el cliente no tiene correo registrado.');
+            } finally {
+                btnEmail.disabled = false;
+                btnEmail.innerHTML = originalContent;
+            }
+        }
+
+        const btnEditar = e.target.closest('.btn-editar-cuota');
+        if (btnEditar) {
+            const cuotaId = btnEditar.getAttribute('data-cuota-id');
+            const montoActual = btnEditar.getAttribute('data-monto');
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            if (typeof Swal !== 'undefined') {
+                const { value: nuevoMonto } = await Swal.fire({
+                    title: 'Editar Monto de Cuota',
+                    input: 'number',
+                    inputLabel: 'Monto (\u20a1)',
+                    inputValue: montoActual,
+                    showCancelButton: true,
+                    confirmButtonText: 'Guardar',
+                    cancelButtonText: 'Cancelar',
+                    inputValidator: (value) => {
+                        if (!value || value <= 0) return 'Ingrese un monto válido';
+                    }
+                });
+
+                if (nuevoMonto) {
+                    const formData = new URLSearchParams();
+                    formData.append('cuotaId', cuotaId);
+                    formData.append('nuevoMonto', nuevoMonto);
+                    formData.append('__RequestVerificationToken', token);
+
+                    const r = await fetch('/Prestamos/EditarMontoCuota', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: formData
+                    });
+
+                    const res = await r.json();
+                    if (res.exito) {
+                        Swal.fire('Actualizado', res.mensaje, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', res.mensaje, 'error');
+                    }
+                }
+            } else {
+                const nuevoMonto = prompt("Ingrese nuevo monto:", montoActual);
+                if (nuevoMonto && !isNaN(nuevoMonto) && nuevoMonto > 0) {
+                    const formData = new URLSearchParams();
+                    formData.append('cuotaId', cuotaId);
+                    formData.append('nuevoMonto', nuevoMonto);
+                    formData.append('__RequestVerificationToken', token);
+
+                    const r = await fetch('/Prestamos/EditarMontoCuota', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: formData
+                    });
+                    const res = await r.json();
+                    if (res.exito) location.reload();
+                    else alert(res.mensaje);
+                }
+            }
+        }
+
+        const btnEliminar = e.target.closest('.btn-eliminar-cuota');
+        if (btnEliminar) {
+            const cuotaId = btnEliminar.getAttribute('data-cuota-id');
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            if (typeof Swal !== 'undefined') {
+                const result = await Swal.fire({
+                    title: '¿Eliminar Cuota?',
+                    text: 'Esta acción no se puede deshacer.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e3342f',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                });
+
+                if (result.isConfirmed) {
+                    const formData = new URLSearchParams();
+                    formData.append('cuotaId', cuotaId);
+                    formData.append('__RequestVerificationToken', token);
+
+                    const r = await fetch('/Prestamos/EliminarCuota', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: formData
+                    });
+
+                    const res = await r.json();
+                    if (res.exito) {
+                        Swal.fire('Eliminada', res.mensaje, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', res.mensaje, 'error');
+                    }
+                }
+            } else {
+                if (confirm("¿Seguro que desea eliminar esta cuota?")) {
+                    const formData = new URLSearchParams();
+                    formData.append('cuotaId', cuotaId);
+                    formData.append('__RequestVerificationToken', token);
+
+                    const r = await fetch('/Prestamos/EliminarCuota', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: formData
+                    });
+                    const res = await r.json();
+                    if (res.exito) location.reload();
+                    else alert(res.mensaje);
+                }
+            }
+        }
+    });
+
+    const formRenovar = document.getElementById('formRenovar');
+    const rnSaldoActual = document.getElementById('rnSaldoActual');
+    const rnMontoAdicional = document.getElementById('rnMontoAdicional');
+    const rnMontoPrestado = document.getElementById('rnMontoPrestado');
+
+    if (rnMontoAdicional && rnSaldoActual && rnMontoPrestado) {
+        rnMontoAdicional.addEventListener('input', () => {
+            const saldo = parseFloat(rnSaldoActual.value) || 0;
+            const adicional = parseFloat(rnMontoAdicional.value) || 0;
+            rnMontoPrestado.value = (saldo + adicional).toFixed(2);
+        });
+    }
+
+    if (formRenovar) {
+        formRenovar.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnEjecutarRenovacion');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> PROCESANDO...';
+
+            const payload = {
+                PrestamoIdActual: parseInt(document.getElementById('globalPrestamoId').value),
+                MontoNuevoSolicitado: parseFloat(document.getElementById('rnMontoPrestado').value.replace(',', '.')) || 0,
+                NuevoInteresPorcentaje: parseFloat(document.getElementById('rnInteres').value.replace(',', '.')) || 0,
+                NuevoCicloDias: parseInt(document.getElementById('rnCiclo').value) || 0,
+                NuevasCuotas: parseInt(document.getElementById('rnCuotas').value) || 0,
+                NuevaFechaInicio: document.getElementById('rnFecha').value,
+                TipoCredito: document.getElementById('rnTipoCredito').value
+            };
+
+            try {
+                const response = await fetch('/Prestamos/Renovar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = `/Prestamos/Detalle/${data.nuevoId}`;
+                } else {
+                    alert('Error: ' + data.message);
+                    btn.disabled = false;
+                    btn.innerHTML = '<span class="material-symbols-outlined">autorenew</span> CONSOLIDAR Y RENOVAR';
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Error de conexión');
+                btn.disabled = false;
+                btn.innerHTML = '<span class="material-symbols-outlined">autorenew</span> CONSOLIDAR Y RENOVAR';
+            }
+        });
+    }
+
+    window.mostrarModalAnularPago = function(cuotaId, prestamoId) {
+        document.getElementById('anularCuotaId').value = cuotaId;
+        document.getElementById('anularPrestamoId').value = prestamoId;
+        document.getElementById('anularMotivo').value = '';
+        document.getElementById('modalAnularPago').classList.remove('hidden');
+    }
+
+    window.cerrarModalAnularPago = function() {
+        document.getElementById('modalAnularPago').classList.add('hidden');
+    }
+</script>
+}
+
+<!-- Modal Anular Pago -->
+<div id="modalAnularPago" class="fixed inset-0 z-[100] hidden">
+    <div class="absolute inset-0 bg-secondary/80 backdrop-blur-sm" onclick="cerrarModalAnularPago()"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-6">
+        <div class="bg-white rounded-[32px] p-8 shadow-2xl animate-in zoom-in-95 duration-300 relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 to-rose-700"></div>
+            
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center border border-rose-100">
+                    <span class="material-symbols-outlined text-rose-500 text-2xl">warning</span>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black text-primary-container tracking-tighter">Anular Pago</h3>
+                    <p class="text-xs text-secondary mt-1">Esta acción revertirá el pago.</p>
+                </div>
+            </div>
+
+            <form action="@Url.Action("AnularPago", "Prestamos")" method="post" class="space-y-6">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="anularCuotaId" name="cuotaId" />
+                <input type="hidden" id="anularPrestamoId" name="prestamoId" />
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-secondary uppercase tracking-widest pl-2">Motivo de Anulación</label>
+                    <textarea id="anularMotivo" name="motivo" required class="w-full bg-surface-container-low border-0 rounded-2xl p-4 text-xs font-medium text-primary-container min-h-[100px] resize-none focus:ring-2 focus:ring-rose-500/20" placeholder="Ej: Error en el monto digitado, pago devuelto, etc."></textarea>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="button" onclick="cerrarModalAnularPago()" class="flex-1 soft-button !bg-surface text-secondary !border-slate-200 !py-3 text-[10px] font-black tracking-widest uppercase hover:bg-slate-100">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="flex-1 soft-button !bg-rose-500 text-white !border-rose-600 !py-3 text-[10px] font-black tracking-widest uppercase hover:bg-rose-600 flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-sm">remove_circle</span>
+                        Anular Pago
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+

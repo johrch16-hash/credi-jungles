@@ -1,0 +1,107 @@
+@model IEnumerable<PrestamosCobros.BLL.DTOs.BitacoraListDto>
+@{
+    ViewData["Title"] = "Auditoría de Sistema";
+
+    string GetIcon(string accion) => accion.ToLower() switch
+    {
+        var a when a.Contains("pago") => "payments",
+        var a when a.Contains("crédito") || a.Contains("credito") => "add_card",
+        var a when a.Contains("login") || a.Contains("inicio") => "login",
+        var a when a.Contains("eliminar") || a.Contains("borrar") => "delete_forever",
+        var a when a.Contains("error") || a.Contains("fallo") => "report",
+        _ => "history"
+    };
+
+    string GetColorClass(string accion) => accion.ToLower() switch
+    {
+        var a when a.Contains("error") || a.Contains("eliminar") => "text-rose-600",
+        _ => "text-primary-container"
+    };
+}
+
+<div class="max-w-4xl mx-auto space-y-10">
+    <div>
+        <h2 class="text-3xl font-black text-primary-container tracking-tighter">Auditoría del Sistema</h2>
+        <p class="text-sm font-medium text-secondary opacity-60">Historial completo de operaciones y seguridad.</p>
+    </div>
+
+    <!-- Audit Timeline -->
+    <div class="relative pl-8">
+        <!-- Continuous Timeline Line -->
+        <div class="absolute left-3 top-0 bottom-0 w-0.5 bg-primary-container/10"></div>
+
+        <div class="space-y-8">
+            @foreach (var log in Model.OrderByDescending(l => l.Fecha))
+            {
+                <div class="relative">
+                    <!-- Dot Indicator -->
+                    <div class="absolute -left-8 top-6 w-4 h-4 rounded-full bg-surface soft-raised z-10 border-2 border-primary-container/20"></div>
+                    
+                    <div class="bg-surface rounded-3xl p-6 soft-raised border border-white/50 transition-all hover:scale-[1.01]">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-2xl soft-recessed-sm flex items-center justify-center">
+                                    <span class="material-symbols-outlined @GetColorClass(log.Accion)">@GetIcon(log.Accion)</span>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-black text-primary-container">@log.Accion</h3>
+                                    <p class="text-[10px] font-bold text-secondary opacity-60 uppercase tracking-widest">@log.UsuarioNombre</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-black text-secondary opacity-40">@log.Fecha.ToString("dd MMM, HH:mm")</span>
+                        </div>
+
+                        <div class="mt-4 p-4 soft-recessed rounded-2xl bg-surface-container-low/30">
+                            <p class="text-xs text-secondary leading-relaxed font-medium italic">@log.Detalle</p>
+                            @if (!string.IsNullOrEmpty(log.DireccionIP))
+                            {
+                                <div class="mt-2 pt-2 border-t border-primary-container/5 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-[14px] text-secondary opacity-40">public</span>
+                                    <span class="text-[10px] font-bold text-secondary opacity-40">IP: @log.DireccionIP</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (User.IsInRole("Master") && ViewBag.ClientesInactivos != null)
+    {
+        var inactivos = (IEnumerable<PrestamosCobros.BLL.DTOs.ClienteInactivoDto>)ViewBag.ClientesInactivos;
+        <div class="mt-12 bg-surface rounded-3xl p-6 soft-raised border border-white/50">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-black text-rose-600 flex items-center gap-2">
+                    <span class="material-symbols-outlined">delete_sweep</span>
+                    Papelera de Clientes (Ocultos)
+                </h3>
+                <span class="px-3 py-1 bg-rose-500/10 text-rose-600 rounded-full text-xs font-bold">@inactivos.Count() inactivos</span>
+            </div>
+            
+            @if (inactivos.Any())
+            {
+                <div class="space-y-4">
+                    @foreach(var c in inactivos)
+                    {
+                        <div class="flex items-center justify-between p-4 rounded-2xl bg-surface-container-low/30 border border-primary-container/5">
+                            <div>
+                                <p class="font-bold text-primary-container">@c.NombreCompleto</p>
+                                <p class="text-xs text-secondary opacity-60">ID: @c.ClienteId | Tel: @c.Telefono | Préstamos: @c.PrestamosActivos</p>
+                            </div>
+                            <form asp-controller="Clientes" asp-action="EliminarPermanente" asp-route-id="@c.ClienteId" method="post" onsubmit="return confirm('¿Estás seguro de ELIMINAR PERMANENTEMENTE a este cliente? Esta acción borrará todos sus datos irremediablemente.');">
+                                <button type="submit" class="p-2 bg-rose-500/10 text-rose-600 rounded-xl hover:bg-rose-500/20 transition-colors" title="Eliminar definitivamente">
+                                    <span class="material-symbols-outlined text-[20px]">delete_forever</span>
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-sm text-secondary opacity-60 italic text-center py-4">No hay clientes ocultos o inactivos.</p>
+            }
+        </div>
+    }
+</div>

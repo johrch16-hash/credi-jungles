@@ -1,0 +1,68 @@
+@{
+    ViewData["Title"] = "Limpieza de Base de Datos";
+}
+
+<div class="max-w-3xl mx-auto space-y-10 pb-12 px-4">
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="flex items-center gap-4 p-5 rounded-[24px] bg-emerald-50 border border-emerald-100 text-emerald-800 soft-raised-sm mb-6">
+            <span class="material-symbols-outlined text-emerald-600 text-2xl">check_circle</span>
+            <span class="text-sm font-black uppercase tracking-wider">@TempData["Mensaje"]</span>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="flex items-center gap-4 p-5 rounded-[24px] bg-red-50 border border-red-100 text-red-800 soft-raised-sm mb-6">
+            <span class="material-symbols-outlined text-red-600 text-2xl">error</span>
+            <span class="text-sm font-black uppercase tracking-wider">@TempData["Error"]</span>
+        </div>
+    }
+
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div class="flex items-center gap-5">
+            <div class="w-16 h-16 bg-red-600 text-white rounded-[24px] flex items-center justify-center soft-raised-sm">
+                <span class="material-symbols-outlined text-4xl">delete_forever</span>
+            </div>
+            <div>
+                <h2 class="text-4xl font-black text-primary-container tracking-tighter">Zona Peligrosa</h2>
+                <p class="text-secondary text-sm font-bold opacity-60">Limpieza masiva de la Base de Datos</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="soft-card !p-8 bg-surface rounded-[32px]">
+        <div class="flex flex-col gap-6">
+            <div class="bg-red-50 text-red-800 p-6 rounded-2xl border border-red-200">
+                <h3 class="text-xl font-black mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined">warning</span> ADVERTENCIA CRÍTICA
+                </h3>
+                <p class="text-sm font-medium leading-relaxed">
+                    Esta acción eliminará de forma <b>permanente e irreversible</b> todos los registros de:
+                </p>
+                <ul class="list-disc list-inside mt-3 space-y-1 text-sm font-bold">
+                    <li>Clientes</li>
+                    <li>Préstamos / Operaciones</li>
+                    <li>Cuotas</li>
+                    <li>Pagos</li>
+                    <li>Notificaciones y Alertas Históricas</li>
+                </ul>
+                <p class="text-sm font-medium leading-relaxed mt-3">
+                    Solo los Gastos, Mensajes Recibidos de WhatsApp y las cuentas de Personal se mantendrán intactas. No hay forma de recuperar estos datos después de ejecutar esta acción.
+                </p>
+            </div>
+
+            <form asp-action="EjecutarLimpiezaBaseDatos" method="post" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-black text-primary-container uppercase tracking-widest mb-2 ml-1">Escriba "LIMPIAR TOTALMENTE" para confirmar:</label>
+                    <input type="text" name="confirmacion" class="w-full bg-surface text-primary-container p-5 rounded-2xl soft-recessed focus:outline-none border-2 border-transparent focus:border-red-500 font-bold placeholder:opacity-30 transition-all" placeholder="LIMPIAR TOTALMENTE" autocomplete="off" required />
+                </div>
+
+                <button type="submit" class="w-full bg-red-600 text-white font-black uppercase tracking-widest py-5 rounded-2xl soft-raised hover:bg-red-700 hover:soft-recessed transition-all flex items-center justify-center gap-3">
+                    <span class="material-symbols-outlined text-2xl">delete</span>
+                    <span>Ejecutar Purga de Datos</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

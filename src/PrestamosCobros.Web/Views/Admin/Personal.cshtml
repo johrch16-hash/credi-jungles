@@ -1,0 +1,131 @@
+@model IEnumerable<PrestamosCobros.BLL.DTOs.UsuarioListDto>
+@{
+    ViewData["Title"] = "Gestión de Personal";
+}
+
+<div class="fade-in pt-8 pb-10">
+    <!-- Header Section -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+        <div class="flex items-center gap-5">
+            <div class="w-16 h-16 bg-primary-container text-white rounded-[24px] flex items-center justify-center soft-raised-sm border border-white/20">
+                <span class="material-symbols-outlined text-3xl">badge</span>
+            </div>
+            <div>
+                <h1 class="text-3xl font-black text-primary-container tracking-tighter leading-none">Personal</h1>
+                <p class="text-[10px] font-bold text-secondary uppercase opacity-40 mt-2 tracking-widest">Estructura Organizativa</p>
+            </div>
+        </div>
+        
+        <a href="@Url.Action("CrearUsuario", "Admin")" class="soft-button soft-button-primary px-8 py-5 !rounded-2xl transition-all group active:scale-95">
+            <span class="material-symbols-outlined group-hover:rotate-90 transition-transform">add_circle</span>
+            <span class="text-xs uppercase tracking-widest">Nuevo Empleado</span>
+        </a>
+    </header>
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="mb-8 p-4 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center gap-3 soft-raised-sm">
+            <span class="material-symbols-outlined">check_circle</span>
+            <p class="text-sm font-bold">@TempData["Mensaje"]</p>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="mb-8 p-4 rounded-2xl bg-red-50 text-red-600 border border-red-100 flex items-center gap-3 soft-raised-sm">
+            <span class="material-symbols-outlined">error</span>
+            <p class="text-sm font-bold">@TempData["Error"]</p>
+        </div>
+    }
+
+    <!-- Users Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        @foreach (var item in Model)
+        {
+            <article class="soft-card !p-8 flex flex-col sm:flex-row items-center gap-8 group hover:scale-[1.02] transition-all">
+                <!-- Profile Identity -->
+                <div class="relative">
+                    <div class="w-24 h-24 rounded-full soft-recessed p-2 bg-slate-50/50">
+                        <div class="w-full h-full rounded-full bg-primary-container flex items-center justify-center text-white font-black text-3xl soft-raised-sm border-2 border-white/10">
+                            @(item.NombreCompleto != null && item.NombreCompleto.Length > 0 ? item.NombreCompleto.Substring(0, 1).ToUpper() : "U")
+                        </div>
+                    </div>
+                    @if (item.Activo)
+                    {
+                        <div class="absolute bottom-1 right-1 w-6 h-6 bg-emerald-500 rounded-full border-4 border-surface shadow-sm"></div>
+                    }
+                </div>
+
+                <div class="flex-grow flex flex-col gap-4 text-center sm:text-left">
+                    <div>
+                        <h3 class="text-xl font-black text-primary-container tracking-tight">@item.NombreCompleto</h3>
+                        <div class="flex flex-wrap justify-center sm:justify-start gap-3 mt-2">
+                            <span class="soft-badge bg-white text-primary-container border border-slate-100">
+                                @item.Rol
+                            </span>
+                            <span class="text-[9px] font-bold text-secondary opacity-40 uppercase tracking-tighter self-center">
+                                @item.Email
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-center sm:justify-start gap-8 pt-4 mt-2 border-t border-primary-container/5">
+                        <!-- Neumorphic Switch -->
+                        <div class="flex flex-col gap-2">
+                            <span class="text-[8px] font-black text-secondary uppercase opacity-30 tracking-widest">Acceso</span>
+                            <div class="soft-switch">
+                                <input type="checkbox" id="user-@item.Id" @(item.Activo ? "checked" : "") onchange="toggleUserStatus(@item.Id)">
+                                <label for="user-@item.Id"></label>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex flex-col gap-2">
+                            <span class="text-[8px] font-black text-secondary uppercase opacity-30 tracking-widest">Acciones</span>
+                            <div class="flex gap-2">
+                                <a href="@Url.Action("EditarUsuario", "Admin", new { id = item.Id })" 
+                                   class="w-10 h-10 rounded-xl bg-white soft-raised-sm flex items-center justify-center text-primary-container hover:text-blue-600 transition-colors">
+                                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                                </a>
+                                <form asp-action="EliminarUsuario" asp-controller="Admin" method="post" onsubmit="return confirm('¿Está seguro de eliminar a este empleado permanentemente?');">
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="submit" class="w-10 h-10 rounded-xl bg-white soft-raised-sm flex items-center justify-center text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors">
+                                        <span class="material-symbols-outlined text-[18px]">delete</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function toggleUserStatus(id) {
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                const response = await fetch(`/Usuarios/ToggleStatus/${id}`, { 
+                    method: 'POST',
+                    headers: { 
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'RequestVerificationToken': token
+                    }
+                });
+                
+                if (!response.ok) {
+                    // Revertir switch si falla
+                    const checkbox = document.getElementById(`user-${id}`);
+                    checkbox.checked = !checkbox.checked;
+                    console.error("Error al actualizar estado");
+                }
+            } catch (error) {
+                console.error("Error de red:", error);
+                const checkbox = document.getElementById(`user-${id}`);
+                checkbox.checked = !checkbox.checked;
+            }
+        }
+    </script>
+}

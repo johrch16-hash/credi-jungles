@@ -1,0 +1,104 @@
+@model PrestamosCobros.BLL.DTOs.ClienteCreateDto
+@{
+    ViewData["Title"] = "Registrar Cliente";
+}
+<div class="space-y-10 pb-12 px-4">
+    <!-- Header -->
+    <div class="flex items-center gap-5">
+        <div class="w-16 h-16 bg-primary-container text-white rounded-[24px] flex items-center justify-center soft-raised-sm">
+            <span class="material-symbols-outlined text-4xl">person_add</span>
+        </div>
+        <div>
+            <h2 class="text-4xl font-black text-primary-container tracking-tighter">Registrar Cliente</h2>
+            <p class="text-secondary text-sm font-bold opacity-60">Creación de perfil en el directorio</p>
+        </div>
+    </div>
+
+    <div class="max-w-2xl">
+        <div class="soft-card !p-10">
+            <form asp-action="Crear" method="post" class="space-y-8">
+                @Html.AntiForgeryToken()
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div asp-validation-summary="ModelOnly" class="text-rose-600 text-[10px] font-black uppercase tracking-widest bg-rose-50 p-4 rounded-2xl mb-6"></div>
+                }
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="md:col-span-2 space-y-3">
+                        <label asp-for="NombreCompleto" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Nombre Completo *</label>
+                        <input asp-for="NombreCompleto" class="soft-input !py-4" placeholder="Juan Pérez López" />
+                        <span asp-validation-for="NombreCompleto" class="text-rose-600 text-[10px] px-3 font-bold"></span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <label asp-for="Telefono" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Teléfono *</label>
+                        <input asp-for="Telefono" class="soft-input !py-4" placeholder="8888-8888" />
+                        <span asp-validation-for="Telefono" class="text-rose-600 text-[10px] px-3 font-bold"></span>
+                        <div id="telefonoFeedback" class="text-rose-600 text-[10px] px-3 font-bold"></div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <label asp-for="Cedula" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Cédula Identidad</label>
+                        <input asp-for="Cedula" class="soft-input !py-4" placeholder="0-0000-0000" />
+                        <span asp-validation-for="Cedula" class="text-rose-600 text-[10px] px-3 font-bold"></span>
+                        <div id="cedulaFeedback" class="text-rose-600 text-[10px] px-3 font-bold"></div>
+                    </div>
+
+                    <div class="md:col-span-2 space-y-3">
+                        <label asp-for="Email" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Correo Electrónico</label>
+                        <input asp-for="Email" type="email" class="soft-input !py-4" placeholder="cliente@email.com" />
+                        <span asp-validation-for="Email" class="text-rose-600 text-[10px] px-3 font-bold"></span>
+                    </div>
+
+                    <div class="md:col-span-2 space-y-3">
+                        <label asp-for="Direccion" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Dirección Domiciliaria</label>
+                        <input asp-for="Direccion" class="soft-input !py-4" placeholder="Provincia, Cantón, Distrito..." />
+                    </div>
+
+                    <div class="md:col-span-2 space-y-3">
+                        <label asp-for="LugarTrabajo" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Centro de Trabajo</label>
+                        <input asp-for="LugarTrabajo" class="soft-input !py-4" placeholder="Empresa o Negocio..." />
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-5 pt-6 border-t-2 border-surface-container-low border-dashed">
+                    <button type="submit" class="soft-button soft-button-primary !py-5 !rounded-2xl flex items-center justify-center gap-3 font-black text-xs tracking-widest shadow-xl" id="btnGuardar">
+                        <span class="material-symbols-outlined">save</span>
+                        GUARDAR CLIENTE
+                    </button>
+                    <a href="@Url.Action("Index")" class="text-center text-[10px] font-black text-secondary uppercase tracking-[0.3em] opacity-40 hover:opacity-100 transition-opacity">
+                        Cancelar y Volver
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const tel = document.querySelector('[name="Telefono"]');
+    const ced = document.querySelector('[name="Cedula"]');
+
+    tel?.addEventListener('blur', async () => {
+        if (!tel.value) return;
+        
+        let digits = tel.value.replace(/\D/g, '');
+        if (digits.length === 8) {
+            tel.value = "+506 " + tel.value.trim();
+        }
+
+        const r = await fetch(`/Clientes/VerificarTelefono?telefono=${encodeURIComponent(tel.value)}`);
+        const d = await r.json();
+        document.getElementById('telefonoFeedback').textContent = d.existe ? 'Número ya registrado en el sistema.' : '';
+    });
+
+    ced?.addEventListener('blur', async () => {
+        if (!ced.value) return;
+        const r = await fetch(`/Clientes/VerificarCedula?cedula=${encodeURIComponent(ced.value)}`);
+        const d = await r.json();
+        document.getElementById('cedulaFeedback').textContent = d.existe ? 'Cédula ya registrada en el sistema.' : '';
+    });
+</script>
+}
+

@@ -1,0 +1,243 @@
+@model List<PrestamosCobros.BLL.DTOs.PrestamoListDto>
+@using System.Linq
+
+@{
+    var clientesAgrupados = Model
+        .GroupBy(p => p.ClienteId)
+        .Select(g => new {
+            ClienteId = g.Key,
+            ClienteNombre = g.First().ClienteNombre,
+            CreditosActivos = g.Where(p => p.Estado != "Liquidado" && p.Estado != "Renovado").ToList(),
+            CreditosHistorial = g.Where(p => p.Estado == "Liquidado" || p.Estado == "Renovado").ToList(),
+            TotalActivos = g.Count(p => p.CuotasAtrasadas == 0 && p.Estado != "Liquidado" && p.Estado != "Renovado"),
+            TotalMora = g.Count(p => p.CuotasAtrasadas > 0 && p.Estado != "Liquidado" && p.Estado != "Renovado"),
+            TotalHistorial = g.Count(p => p.Estado == "Liquidado" || p.Estado == "Renovado"),
+            MontoTotal = g.Where(p => p.Estado != "Liquidado" && p.Estado != "Renovado").Sum(p => p.MontoTotal),
+            SaldoPendiente = g.Where(p => p.Estado != "Liquidado" && p.Estado != "Renovado").Sum(p => p.SaldoPendiente)
+        })
+        .OrderBy(c => c.ClienteNombre)
+        .ToList();
+}
+
+<div class="space-y-10 pb-12">
+    <!-- Header - Premium Typography -->
+    <div class="flex justify-between items-center px-2">
+        <div>
+            <h2 class="text-4xl font-black text-white tracking-tighter">Préstamos</h2>
+            <p class="text-[#C8B89E] text-sm font-bold opacity-80">Control de saldos y vencimientos</p>
+        </div>
+        <a href="@Url.Action("Crear")" class="w-16 h-16 bg-gradient-to-br from-[#F4E5B0] via-[#D4AF37] to-[#8C6239] text-[#160E09] rounded-[24px] flex items-center justify-center shadow-[0_8px_25px_rgba(212,175,55,0.4)] active:scale-90 transition-transform" title="Emitir Nuevo Préstamo">
+            <span class="material-symbols-outlined text-3xl font-black">add_card</span>
+        </a>
+    </div>
+
+    <!-- Soft UI Filter Tabs -->
+    <div class="px-2">
+        <div class="soft-card !p-2 !rounded-[24px] flex gap-2 bg-[#140C07]/80 border border-[#D4AF37]/30 shadow-lg">
+            <button onclick="filterByStatus('Activo')" id="tab-activo" 
+                    class="flex-1 py-4 rounded-[18px] text-xs font-black uppercase tracking-[0.2em] transition-all duration-300">
+                Activos
+            </button>
+            <button onclick="filterByStatus('Atrasado')" id="tab-atrasado" 
+                    class="flex-1 py-4 rounded-[18px] text-xs font-black uppercase tracking-[0.2em] transition-all duration-300">
+                En Mora
+            </button>
+        </div>
+    </div>
+
+    <!-- Loans List - Grouped by Client -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 px-2 items-start" id="prestamosGrid">
+         @foreach (var client in clientesAgrupados)
+         {
+             <div class="cliente-card soft-card flex flex-col gap-6 transition-all duration-300 group cursor-pointer hover:shadow-xl" 
+                 data-tiene-activos="@(client.TotalActivos > 0 ? "true" : "false")"
+                 data-tiene-mora="@(client.TotalMora > 0 ? "true" : "false")"
+                 onclick="toggleExpand(this)">
+                
+                <div class="flex justify-between items-start">
+                    <div class="flex items-center gap-5">
+                        <div class="w-14 h-14 bg-gradient-to-br from-[#2A1C14] to-[#160E09] border border-[#D4AF37]/30 text-[#F4E5B0] rounded-[20px] flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
+                            <span class="material-symbols-outlined text-3xl">person</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-black text-white leading-tight group-hover:text-[#F4E5B0] transition-colors">@client.ClienteNombre</h3>
+                            <p class="text-[10px] font-black text-[#C8B89E] uppercase tracking-[0.2em]">
+                                @client.CreditosActivos.Count Crédito@(client.CreditosActivos.Count != 1 ? "s" : "") Activo@(client.CreditosActivos.Count != 1 ? "s" : "")
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        @if (client.TotalActivos > 0)
+                        {
+                            <span class="soft-badge bg-[#1B4332]/80 text-[#52B788] border border-[#52B788]/40 text-[10px] font-black uppercase">
+                                @client.TotalActivos Al Día
+                            </span>
+                        }
+                        @if (client.TotalMora > 0)
+                        {
+                            <span class="soft-badge bg-[#4C0519]/80 text-[#FDA4AF] border border-[#F43F5E]/40 text-[10px] font-black uppercase">
+                                @client.TotalMora Mora
+                            </span>
+                        }
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="soft-recessed p-4 rounded-[20px]">
+                        <p class="text-[10px] font-black text-[#C8B89E] uppercase tracking-[0.2em] mb-1">Monto Total</p>
+                        <p class="text-lg font-black text-white tracking-tight">₡@client.MontoTotal.ToString("N0")</p>
+                    </div>
+                    <div class="soft-recessed p-4 rounded-[20px]">
+                        <p class="text-[10px] font-black text-[#C8B89E] uppercase tracking-[0.2em] mb-1">Saldo Real</p>
+                        <p class="text-lg font-black text-[#FB7185] tracking-tight">₡@client.SaldoPendiente.ToString("N0")</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-[#F4E5B0] text-xs font-black uppercase tracking-wider border-t border-[#D4AF37]/20 pt-3">
+                    <span>Ver créditos</span>
+                    <span class="material-symbols-outlined transition-transform duration-300 chevron-icon">expand_more</span>
+                </div>
+
+                <!-- Collapsible Credits List -->
+                <div class="collapsible-section hidden flex flex-col gap-4 mt-2 border-t border-[#D4AF37]/20 pt-4" onclick="event.stopPropagation();">
+                    
+                    <!-- Activos Section -->
+                    @if (client.CreditosActivos.Any(c => c.CuotasAtrasadas == 0))
+                    {
+                        <div class="section-activos flex flex-col gap-3">
+                            <h4 class="text-[10px] font-black text-[#52B788] uppercase tracking-widest mb-1">Créditos Al Día</h4>
+                            @foreach (var item in client.CreditosActivos.Where(c => c.CuotasAtrasadas == 0))
+                            {
+                                <div class="p-4 bg-[#1B4332]/40 hover:bg-[#1B4332]/60 rounded-[20px] border border-[#52B788]/40 flex flex-col gap-2 cursor-pointer transition-all active:scale-[0.98]"
+                                     onclick="location.href='@Url.Action("Detalle", new { id = item.PrestamoId })'">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-black text-white">
+                                            @(string.IsNullOrEmpty(item.NombreAlias) ? $"Folio LN-{item.PrestamoId}" : item.NombreAlias)
+                                        </span>
+                                        <span class="text-xs font-black text-[#52B788]">₡@item.SaldoPendiente.ToString("N0") pend.</span>
+                                    </div>
+                                    <div class="flex justify-between text-[10px] text-[#C8B89E] font-bold uppercase tracking-wider">
+                                        <span>Amortización: @item.PorcentajePagado%</span>
+                                        <span>Vence: @(item.FechaVencimientoProx?.ToString("dd MMM, yyyy") ?? "N/A")</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <!-- Mora Section -->
+                    @if (client.CreditosActivos.Any(c => c.CuotasAtrasadas > 0))
+                    {
+                        <div class="section-mora flex flex-col gap-3">
+                            <h4 class="text-[10px] font-black text-[#FDA4AF] uppercase tracking-widest mb-1">Créditos en Mora</h4>
+                            @foreach (var item in client.CreditosActivos.Where(c => c.CuotasAtrasadas > 0))
+                            {
+                                <div class="p-4 bg-[#4C0519]/40 hover:bg-[#4C0519]/60 rounded-[20px] border border-[#F43F5E]/40 flex flex-col gap-2 cursor-pointer transition-all active:scale-[0.98]"
+                                     onclick="location.href='@Url.Action("Detalle", new { id = item.PrestamoId })'">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-black text-white font-bold">
+                                            @(string.IsNullOrEmpty(item.NombreAlias) ? $"Folio LN-{item.PrestamoId}" : item.NombreAlias)
+                                        </span>
+                                        <span class="text-xs font-black text-[#FDA4AF]">₡@item.SaldoPendiente.ToString("N0") pend.</span>
+                                    </div>
+                                    <div class="flex justify-between text-[10px] text-[#C8B89E] font-bold uppercase tracking-wider">
+                                        <span>Amortización: @item.PorcentajePagado%</span>
+                                        <span class="text-[#FB7185]">Atrasado: @item.CuotasAtrasadas cuota@(item.CuotasAtrasadas > 1 ? "s" : "")</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function filterByStatus(estado) {
+            const cards = document.querySelectorAll('.cliente-card');
+            const tabActivo = document.getElementById('tab-activo');
+            const tabAtrasado = document.getElementById('tab-atrasado');
+
+            cards.forEach(card => {
+                const tieneActivos = card.dataset.tieneActivos === 'true';
+                const tieneMora = card.dataset.tieneMora === 'true';
+
+                const collapsible = card.querySelector('.collapsible-section');
+                const chevron = card.querySelector('.chevron-icon');
+                if (collapsible) {
+                    collapsible.classList.add('hidden');
+                }
+                if (chevron) {
+                    chevron.classList.remove('rotate-180');
+                }
+
+                if (estado === 'Activo') {
+                    if (tieneActivos) {
+                        card.style.display = 'flex';
+                        const secActivos = card.querySelector('.section-activos');
+                        const secMora = card.querySelector('.section-mora');
+                        if (secActivos) secActivos.style.display = 'flex';
+                        if (secMora) secMora.style.display = 'none';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                } else {
+                    if (tieneMora) {
+                        card.style.display = 'flex';
+                        const secActivos = card.querySelector('.section-activos');
+                        const secMora = card.querySelector('.section-mora');
+                        if (secMora) secMora.style.display = 'flex';
+                        if (secActivos) secActivos.style.display = 'none';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
+            });
+
+            const activeClasses = ['bg-[#2A1C14]', 'text-[#F4E5B0]', 'border', 'border-[#D4AF37]/50', 'shadow-md'];
+            const inactiveClasses = ['text-[#A89F91]', 'border-transparent'];
+
+            if (estado === 'Activo') {
+                tabActivo.classList.add(...activeClasses);
+                tabActivo.classList.remove(...inactiveClasses);
+                tabAtrasado.classList.remove(...activeClasses);
+                tabAtrasado.classList.add(...inactiveClasses);
+            } else {
+                tabAtrasado.classList.add(...activeClasses);
+                tabAtrasado.classList.remove(...inactiveClasses);
+                tabActivo.classList.remove(...activeClasses);
+                tabActivo.classList.add(...inactiveClasses);
+            }
+        }
+
+        function toggleExpand(card) {
+            const allCards = document.querySelectorAll('.cliente-card');
+            const collapsible = card.querySelector('.collapsible-section');
+            const chevron = card.querySelector('.chevron-icon');
+            
+            const isCurrentlyHidden = collapsible ? collapsible.classList.contains('hidden') : true;
+
+            allCards.forEach(c => {
+                const col = c.querySelector('.collapsible-section');
+                const chev = c.querySelector('.chevron-icon');
+                if (col) {
+                    col.classList.add('hidden');
+                }
+                if (chev) {
+                    chev.classList.remove('rotate-180');
+                }
+            });
+
+            if (collapsible && isCurrentlyHidden) {
+                collapsible.classList.remove('hidden');
+                chevron.classList.add('rotate-180');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => filterByStatus('Activo'));
+    </script>
+}

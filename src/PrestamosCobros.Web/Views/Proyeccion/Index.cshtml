@@ -1,0 +1,375 @@
+@model IEnumerable<PrestamosCobros.DAL.Entities.Prestamo>
+
+@{
+    ViewData["Title"] = "Generador de Proyecciones";
+}
+
+<div class="space-y-10 pb-12 px-4 max-w-5xl mx-auto" id="appContainer">
+    
+    <!-- VISTA 1: FORMULARIO -->
+    <div id="formView">
+        <div class="mb-8">
+            <h2 class="text-4xl font-black text-[#001f3f] tracking-tighter">Generador de Proyecciones</h2>
+            <p class="text-secondary text-sm font-medium mt-1">Calcula y proyecta créditos de forma profesional para tus clientes.</p>
+        </div>
+
+        <div class="soft-card !p-8 lg:!p-12">
+            <!-- Section 1: Datos del Cliente -->
+            <div class="mb-10">
+                <h3 class="text-[13px] font-black text-[#001f3f] uppercase tracking-[0.1em] mb-6 border-b border-gray-200 pb-3">1. DATOS DEL CLIENTE</h3>
+                
+                <div class="flex items-center gap-6 mb-6">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="tipoCliente" value="existente" checked class="w-4 h-4 text-[#001f3f] bg-white border-gray-300 focus:ring-[#001f3f]" />
+                        <span class="text-sm font-bold text-gray-700">Cliente Existente</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="tipoCliente" value="nuevo" class="w-4 h-4 text-[#001f3f] bg-white border-gray-300 focus:ring-[#001f3f]" />
+                        <span class="text-sm font-bold text-gray-700">Registro Rápido (Nuevo)</span>
+                    </label>
+                </div>
+
+                <div class="space-y-4" id="seccionClienteExistente">
+                    <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 pl-2">SELECCIONAR CLIENTE</label>
+                    <select id="clienteSelect" class="soft-input !py-4 w-full cursor-pointer appearance-none">
+                        <option value="">-- Seleccione un cliente --</option>
+                        @if (ViewBag.Clientes != null)
+                        {
+                            foreach (var c in ViewBag.Clientes)
+                            {
+                                <option value="@c.Value">@c.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden" id="seccionClienteNuevo">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 pl-2">NOMBRE COMPLETO</label>
+                        <input type="text" id="nuevoNombre" class="soft-input !py-4 w-full" placeholder="Ej: Juan Pérez" />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 pl-2">N° TELÉFONO (WhatsApp)</label>
+                        <input type="text" id="nuevoTelefono" class="soft-input !py-4 w-full" placeholder="Ej: 50688888888" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Condiciones del Crédito -->
+            <div class="mb-10">
+                <h3 class="text-[13px] font-black text-[#001f3f] uppercase tracking-[0.1em] mb-6 border-b border-gray-200 pb-3">2. CONDICIONES DEL CRÉDITO</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="space-y-2 relative">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 pl-2">MONTO A PRESTAR</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₡</span>
+                            <input type="number" id="montoPrestado" class="soft-input !py-4 w-full !pl-10 !pr-4" placeholder="0" />
+                        </div>
+                    </div>
+                    <div class="space-y-2 relative">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 pl-2">TASA INTERÉS (%)</label>
+                        <div class="relative">
+                            <input type="number" id="tasaInteres" class="soft-input !py-4 w-full !pl-4 !pr-10" placeholder="0" />
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">%</span>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 pl-2">TOTAL DE CUOTAS</label>
+                        <input type="number" id="numeroCuotas" class="soft-input !py-4 w-full" placeholder="0" />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 pl-2">FRECUENCIA (DÍAS)</label>
+                        <select id="frecuencia" class="soft-input !py-4 w-full cursor-pointer appearance-none">
+                            <option value="30">Mensual (30 días)</option>
+                            <option value="15">Quincenal (15 días)</option>
+                            <option value="7">Semanal (7 días)</option>
+                            <option value="1">Diario (1 día)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" id="btnGenerar" class="w-full h-14 bg-[#001f3f] hover:bg-[#00162d] text-white rounded-[20px] font-black tracking-widest text-[12px] uppercase transition-all active:scale-[0.99] flex items-center justify-center gap-3 shadow-lg shadow-[#001f3f]/20 mt-4">
+                <span class="material-symbols-outlined text-lg">calculate</span>
+                GENERAR PROYECCIÓN
+            </button>
+        </div>
+    </div>
+
+    <!-- VISTA 2: RESULTADOS -->
+    <div id="resultsView" class="hidden">
+        
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h2 class="text-4xl font-black text-[#001f3f] tracking-tighter">Proyección de Crédito</h2>
+                <p class="text-secondary text-sm font-medium mt-1" id="resClienteName">Para Cliente</p>
+            </div>
+            <div class="flex gap-3">
+                <button class="px-6 h-12 bg-white rounded-2xl font-black text-[11px] uppercase tracking-widest text-[#001f3f] border border-gray-200 shadow-sm hover:bg-gray-50 transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">picture_as_pdf</span> DESCARGAR PDF
+                </button>
+                <button id="btnNueva" class="px-6 h-12 bg-surface rounded-2xl font-black text-[11px] uppercase tracking-widest text-secondary hover:bg-gray-200 transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">arrow_back</span> NUEVA
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="soft-card !p-6 flex flex-col justify-center">
+                <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">CAPITAL SOLICITADO</span>
+                <span class="text-2xl font-black text-[#3b82f6]" id="resCapital">₡0</span>
+            </div>
+            <div class="soft-card !p-6 flex flex-col justify-center">
+                <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">TASA</span>
+                <span class="text-2xl font-black text-[#3b82f6]" id="resTasa">0%</span>
+            </div>
+            <div class="soft-card !p-6 flex flex-col justify-center">
+                <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">PLAZO</span>
+                <span class="text-2xl font-black text-[#3b82f6]" id="resPlazo">0 Cuotas</span>
+            </div>
+            <div class="bg-[#2563eb] rounded-[24px] p-6 flex flex-col justify-center shadow-lg shadow-blue-500/30">
+                <span class="text-[10px] font-black text-blue-200 uppercase tracking-widest mb-1">CUOTA FIJA</span>
+                <span class="text-2xl font-black text-white" id="resCuota">₡0</span>
+            </div>
+        </div>
+
+        <div class="bg-[#2a3c71] rounded-[24px] overflow-hidden mb-8 shadow-xl">
+            <table class="w-full text-left text-white">
+                <thead class="bg-[#1e2b52]">
+                    <tr>
+                        <th class="py-5 px-6 text-[10px] font-black uppercase tracking-widest opacity-80">CUOTA</th>
+                        <th class="py-5 px-6 text-[10px] font-black uppercase tracking-widest opacity-80">FECHA</th>
+                        <th class="py-5 px-6 text-[10px] font-black uppercase tracking-widest opacity-80">CAPITAL</th>
+                        <th class="py-5 px-6 text-[10px] font-black uppercase tracking-widest opacity-80">INTERÉS</th>
+                        <th class="py-5 px-6 text-[10px] font-black uppercase tracking-widest opacity-80">TOTAL</th>
+                        <th class="py-5 px-6 text-[10px] font-black uppercase tracking-widest opacity-80 text-right">SALDO RESTANTE</th>
+                    </tr>
+                </thead>
+                <tbody id="resTableBody" class="text-sm font-medium">
+                    <!-- Dinámico -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bg-white border border-[#C8E6C9] rounded-[32px] p-8 shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-2 h-full bg-[#25D366]"></div>
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-[#E8F5E9] text-[#25D366] rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 0C5.385 0 0 5.388 0 12.037c0 2.12.551 4.195 1.597 6.01L.031 23.992l6.096-1.596A11.956 11.956 0 0 0 12.031 24c6.645 0 12.029-5.387 12.029-12.033S18.677 0 12.031 0zm0 22.016c-1.802 0-3.565-.484-5.111-1.4L6.442 20.33l-3.805.996.996-3.805-.312-.496C2.41 15.485 1.93 13.774 1.93 12.037c0-5.572 4.536-10.106 10.101-10.106 5.572 0 10.103 4.534 10.103 10.106s-4.531 10.106-10.103 10.106V22.016zm5.551-7.558c-.305-.152-1.802-.888-2.083-.99-.281-.101-.486-.152-.689.152-.203.305-.788.99-.966 1.193-.178.203-.356.228-.661.076-.305-.152-1.286-.474-2.45-1.514-.906-.81-1.517-1.809-1.695-2.114-.178-.305-.019-.47.133-.623.138-.138.305-.356.458-.534.152-.178.203-.305.305-.508.101-.203.051-.381-.025-.534-.076-.152-.689-1.661-.941-2.274-.246-.596-.497-.514-.689-.523-.178-.009-.383-.009-.586-.009-.203 0-.534.076-.813.381-.281.305-1.069 1.041-1.069 2.54 0 1.498 1.094 2.946 1.246 3.149.152.203 2.146 3.275 5.197 4.593.727.314 1.293.501 1.737.641.729.231 1.394.198 1.916.12.585-.087 1.802-.736 2.057-1.448.254-.712.254-1.32.178-1.448-.076-.128-.281-.203-.586-.356z"/></svg>
+                    </div>
+                    <div>
+                        <h4 class="font-black text-[#001f3f] text-lg">Enviar Notificación Oficial por WhatsApp</h4>
+                        <p class="text-xs text-gray-500 font-medium">Se usará la plantilla oficial de Meta proyeccion_credito_v1.</p>
+                    </div>
+                </div>
+                <button id="btnEnviarWA" class="px-8 h-12 bg-[#25D366] hover:bg-[#1EBE5D] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all shadow-md active:scale-[0.98]">
+                    ENVIAR PROYECCIÓN
+                </button>
+            </div>
+
+            <div class="bg-[#E8F5E9] rounded-2xl p-6 border border-[#C8E6C9]/50 relative">
+                <div class="absolute -top-3 left-8 w-6 h-6 bg-[#E8F5E9] border-t border-l border-[#C8E6C9]/50 rotate-45"></div>
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="material-symbols-outlined text-[#2E7D32] text-sm">visibility</span>
+                    <h5 class="text-[10px] font-black text-[#2E7D32] uppercase tracking-widest">VISTA PREVIA DEL MENSAJE</h5>
+                </div>
+                <div id="resWaText" class="text-sm text-[#1B5E20] leading-relaxed font-mono whitespace-pre-wrap">
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('btnNueva').addEventListener('click', () => {
+            document.getElementById('resultsView').classList.add('hidden');
+            document.getElementById('formView').classList.remove('hidden');
+        });
+
+        const radioExistente = document.querySelector('input[name="tipoCliente"][value="existente"]');
+        const radioNuevo = document.querySelector('input[name="tipoCliente"][value="nuevo"]');
+        const secExistente = document.getElementById('seccionClienteExistente');
+        const secNuevo = document.getElementById('seccionClienteNuevo');
+
+        radioExistente.addEventListener('change', () => {
+            secExistente.classList.remove('hidden');
+            secNuevo.classList.add('hidden');
+        });
+        radioNuevo.addEventListener('change', () => {
+            secExistente.classList.add('hidden');
+            secNuevo.classList.remove('hidden');
+        });
+
+        document.getElementById('btnGenerar').addEventListener('click', function () {
+            const monto = parseFloat(document.getElementById('montoPrestado').value || 0);
+            const interes = parseFloat(document.getElementById('tasaInteres').value || 0);
+            const cuotas = parseInt(document.getElementById('numeroCuotas').value || 1);
+            const freq = parseInt(document.getElementById('frecuencia').value || 30);
+            
+            let isExistente = document.querySelector('input[name="tipoCliente"]:checked').value === 'existente';
+            let clienteNombre = "Cliente";
+            let clienteId = 0;
+            let nuevoTelefono = "";
+
+            if (isExistente) {
+                const selectCliente = document.getElementById('clienteSelect');
+                if (selectCliente.selectedIndex > 0) {
+                    let txt = selectCliente.options[selectCliente.selectedIndex].text;
+                    clienteNombre = txt.split(' - ')[0] || txt;
+                    clienteId = parseInt(selectCliente.value) || 0;
+                } else {
+                    alert("Por favor seleccione un cliente o cambie a Registro Rápido.");
+                    return;
+                }
+            } else {
+                clienteNombre = document.getElementById('nuevoNombre').value.trim();
+                nuevoTelefono = document.getElementById('nuevoTelefono').value.trim();
+                if(!clienteNombre || !nuevoTelefono) {
+                    alert("Para Registro Rápido, por favor ingrese Nombre Completo y Teléfono.");
+                    return;
+                }
+            }
+
+            if (monto <= 0 || interes < 0 || cuotas <= 0) {
+                alert("Por favor ingrese valores válidos.");
+                return;
+            }
+
+            // --- LÓGICA MATEMÁTICA CON REDONDEO ---
+            // 1. Plazo en meses (mínimo 1 mes)
+            let totalDias = freq * cuotas;
+            let meses = Math.round(totalDias / 30.0);
+            if (meses < 1) meses = 1;
+
+            // 2. Fórmulas
+            const interesTotal = Math.round(monto * (interes / 100) * meses);
+            const montoBase = Math.round(monto + interesTotal);
+            const gastoLey = Math.round(montoBase * 0.03);
+            const montoCreditoVisible = Math.round(montoBase - gastoLey);
+            
+            // Redondear la cuota base al millar hacia arriba
+            const valorCuotaFija = Math.ceil((montoBase / cuotas) / 1000) * 1000;
+
+            // --- RENDERIZADO DE LA INTERFAZ DE RESULTADOS ---
+
+            // A. Tarjetas Superiores
+            // Tarjeta 1 [CAPITAL]: Monto Crédito Visible
+            document.getElementById('resCapital').textContent = `₡${montoCreditoVisible.toLocaleString('es-CR')}`;
+            
+            // Tarjeta 2 [TASA]: Porcentaje ingresado
+            document.getElementById('resTasa').textContent = `${interes.toLocaleString('es-CR')}%`;
+            
+            // Tarjeta 3 [PLAZO]: Cuotas y frecuencia
+            let freqLabel = freq == 30 ? "Mensual" : freq == 15 ? "Quincenal" : freq == 7 ? "Semanal" : "Diaria";
+            document.getElementById('resPlazo').textContent = `${cuotas} Cuotas (${freqLabel})`;
+            
+            // Tarjeta 4 [CUOTA FIJA]
+            document.getElementById('resCuota').textContent = `₡${valorCuotaFija.toLocaleString('es-CR')}`;
+            
+            document.getElementById('resClienteName').textContent = `Para ${clienteNombre}`;
+
+            // B. Tabla de Amortización
+            let htmlCuotas = '';
+            let waCuotas = [];
+            let saldoRestante = montoBase;
+            let acumulado = 0;
+            
+            // Distribuir interés proporcionalmente (solo visual)
+            const interesPorCuota = Math.round(interesTotal / cuotas);
+
+            for (let i = 1; i <= cuotas; i++) {
+                // Fecha
+                let f = new Date();
+                f.setDate(f.getDate() + (freq * i));
+                let fStr = f.toLocaleDateString('es', { day: '2-digit', month: 'short' }).toUpperCase();
+                
+                // Totales
+                let totalActual = (i === cuotas) ? (montoBase - acumulado) : valorCuotaFija;
+                acumulado += totalActual;
+                
+                let intActual = (i === cuotas) ? (interesTotal - (interesPorCuota * (cuotas - 1))) : interesPorCuota;
+                let capActual = totalActual - intActual;
+
+                saldoRestante -= totalActual;
+                if(saldoRestante < 0 || i === cuotas) saldoRestante = 0;
+                
+                htmlCuotas += `
+                    <tr class="border-b border-white/10 hover:bg-white/5 transition-colors">
+                        <td class="py-4 px-6 font-black text-blue-300">#${i}</td>
+                        <td class="py-4 px-6 font-medium">${fStr}</td>
+                        <td class="py-4 px-6 font-medium text-gray-300">₡${capActual.toLocaleString('es-CR')}</td>
+                        <td class="py-4 px-6 font-medium text-gray-300">₡${intActual.toLocaleString('es-CR')}</td>
+                        <td class="py-4 px-6 font-black">₡${totalActual.toLocaleString('es-CR')}</td>
+                        <td class="py-4 px-6 font-black text-right text-gray-300">₡${saldoRestante.toLocaleString('es-CR')}</td>
+                    </tr>
+                `;
+                waCuotas.push(`• Cuota #${i.toString().padStart(2, '0')} | ${fStr} | ₡${totalActual.toLocaleString('es-CR')}`);
+            }
+
+            document.getElementById('resTableBody').innerHTML = htmlCuotas;
+
+            // C. Sección WhatsApp
+            const waMsg = `Hola ${clienteNombre}, adjuntamos la proyección de tu crédito:\n\n` +
+                `Capital: ₡${montoCreditoVisible.toLocaleString('es-CR')}\n` +
+                `Interés: ₡${gastoLey.toLocaleString('es-CR')}\n` + 
+                `Cuota Pactada: ₡${valorCuotaFija.toLocaleString('es-CR')}\n\n` +
+                `Detalle de Cuotas:\n${waCuotas.join('\n')}\n\n` +
+                `Monto Total a Pagar: ₡${montoBase.toLocaleString('es-CR')}`;
+            
+            document.getElementById('resWaText').innerText = waMsg;
+
+            // Guardar datos en el botón para enviar
+            window._waData = {
+                ClienteId: clienteId,
+                NombreCliente: clienteNombre,
+                TelefonoCliente: nuevoTelefono,
+                CapitalFormateado: montoCreditoVisible.toLocaleString('es-CR'),
+                InteresFormateado: gastoLey.toLocaleString('es-CR'),
+                CuotaFormateada: valorCuotaFija.toLocaleString('es-CR'),
+                DetalleCuotas: waCuotas.join('  |  ').replace(/\n/g, " ").replace(/•/g, "🔹"),
+                TotalFormateado: montoBase.toLocaleString('es-CR')
+            };
+
+            // Mostrar resultados
+            document.getElementById('formView').classList.add('hidden');
+            document.getElementById('resultsView').classList.remove('hidden');
+        });
+
+        document.getElementById('btnEnviarWA').addEventListener('click', async function() {
+            if(!window._waData) {
+                alert("Hubo un problema con la proyección. Vuelva a generarla.");
+                return;
+            }
+            
+            const btn = this;
+            const originalText = btn.innerText;
+            btn.innerText = "ENVIANDO...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/Proyeccion/EnviarWhatsAppSimulacion', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(window._waData)
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert("¡Proyección enviada exitosamente por WhatsApp!");
+                } else {
+                    alert("Error: " + data.message);
+                }
+            } catch(e) {
+                console.error(e);
+                alert("Error de red al enviar WhatsApp.");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        });
+    </script>
+}

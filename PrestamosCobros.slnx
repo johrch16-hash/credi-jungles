@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PrestamosCobros.BLL/PrestamosCobros.BLL.csproj" />
+    <Project Path="src/PrestamosCobros.DAL/PrestamosCobros.DAL.csproj" />
+    <Project Path="src/PrestamosCobros.Infrastructure/PrestamosCobros.Infrastructure.csproj" />
+    <Project Path="src/PrestamosCobros.Web/PrestamosCobros.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PrestamosCobros.Tests/PrestamosCobros.Tests.csproj" />
+  </Folder>
+</Solution>

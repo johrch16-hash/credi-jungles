@@ -1,0 +1,152 @@
+@model PrestamosCobros.BLL.DTOs.LoginDto
+@{
+    ViewData["Title"] = "Iniciar Sesión";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iniciar Sesión - Credi Jungles</title>
+    <script src="https://cdn.tailwindcss.com?plugins=container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="~/css/soft-ui.css" asp-append-version="true" />
+    <link rel="icon" type="image/jpeg" href="~/img/logo_chichera.jpg" asp-append-version="true" />
+    <script id="tailwind-config">
+        tailwind.config = {
+          theme: {
+            extend: {
+              fontFamily: {
+                sans: ['Outfit', 'sans-serif'],
+              },
+              colors: {
+                "chichera-dark": "#0D0805",
+                "chichera-wood": "#1A1009",
+                "chichera-card": "#1E140C",
+                "chichera-gold": "#D4AF37",
+                "chichera-gold-light": "#F4E5B0",
+                "chichera-jungle": "#1B4332",
+                "chichera-leaf": "#2D6A4F",
+                "chichera-accent": "#52B788"
+              }
+            }
+          }
+        }
+    </script>
+    <style>
+        body {
+            background: radial-gradient(circle at 50% 30%, #2D1D14 0%, #170E08 55%, #0A0604 100%);
+            min-height: 100vh;
+            font-family: 'Outfit', sans-serif;
+        }
+        .tiki-card {
+            background: linear-gradient(180deg, rgba(32, 21, 14, 0.94) 0%, rgba(20, 13, 8, 0.97) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 50px rgba(212, 175, 55, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+        }
+        .gold-input {
+            background: rgba(12, 8, 5, 0.75) !important;
+            border: 1.5px solid rgba(212, 175, 55, 0.25) !important;
+            color: #FFFFFF !important;
+            transition: all 0.3s ease;
+        }
+        .gold-input:focus {
+            border-color: #D4AF37 !important;
+            box-shadow: 0 0 18px rgba(212, 175, 55, 0.35), inset 0 2px 4px rgba(0, 0, 0, 0.6) !important;
+            outline: none !important;
+        }
+        .gold-title {
+            background: linear-gradient(135deg, #FFF8DC 0%, #F5E6B3 25%, #D4AF37 55%, #B3861B 80%, #7A5408 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 12px rgba(212, 175, 55, 0.25);
+        }
+        .btn-chichera-gold {
+            background: linear-gradient(135deg, #F5E6B3 0%, #D4AF37 45%, #AA7C11 100%);
+            color: #150E07;
+            box-shadow: 0 10px 25px rgba(184, 134, 11, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-chichera-gold:hover {
+            background: linear-gradient(135deg, #FFFFFF 0%, #F5E6B3 30%, #D4AF37 100%);
+            box-shadow: 0 14px 32px rgba(212, 175, 55, 0.55);
+            transform: translateY(-2px);
+        }
+        .btn-chichera-gold:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 sm:p-6 relative overflow-x-hidden">
+    <!-- Ambient Warm Tiki Glow Flare -->
+    <div class="fixed w-[600px] h-[600px] rounded-full bg-[#D4AF37] opacity-[0.06] blur-[120px] pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
+    <div class="fixed w-[400px] h-[400px] rounded-full bg-[#2D6A4F] opacity-[0.08] blur-[100px] pointer-events-none -top-20 -left-20"></div>
+
+    <div class="w-full max-w-[440px] relative z-10">
+        <div class="tiki-card rounded-[36px] p-8 sm:p-10 backdrop-blur-xl relative">
+            <!-- Header with Logo -->
+            <div class="text-center mb-8">
+                <!-- Circular/Framed Logo with Gold Rim -->
+                <div class="inline-flex items-center justify-center mb-5 p-1 rounded-[28px] bg-gradient-to-br from-[#F5E6B3] via-[#D4AF37] to-[#7A5408] shadow-[0_10px_30px_rgba(0,0,0,0.6)] group">
+                    <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-[24px] overflow-hidden bg-black/60 flex items-center justify-center">
+                        <img src="~/img/logo_chichera.jpg" asp-append-version="true" alt="La Chichera Logo" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    </div>
+                </div>
+
+                <h1 class="text-3xl sm:text-4xl font-black gold-title tracking-tight leading-none mb-2 uppercase">
+                    Credi Jungles
+                </h1>
+                
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#1B4332]/60 border border-[#52B788]/40 backdrop-blur-md mb-2">
+                    <span class="w-2 h-2 rounded-full bg-[#52B788] animate-pulse"></span>
+                    <span class="text-[10px] font-black uppercase tracking-[0.3em] text-[#52B788]">FINANZAS & CRÉDITOS</span>
+                </div>
+
+                <p class="text-xs font-semibold text-[#A89F91] uppercase tracking-[0.15em] opacity-80">
+                    Gestión Financiera & Créditos
+                </p>
+            </div>
+
+            <!-- Login Form -->
+            <form asp-action="Login" method="post" class="space-y-6">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+
+                <div asp-validation-summary="All" class="text-rose-400 text-xs font-bold uppercase tracking-wider px-4 py-3 bg-rose-950/60 border border-rose-800/60 rounded-xl @(ViewData.ModelState.IsValid ? "hidden" : "")"></div>
+
+                <div class="space-y-2">
+                    <label asp-for="Email" class="text-[11px] font-black uppercase tracking-[0.2em] text-[#F5E6B3] px-2 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm text-[#D4AF37]">person</span>
+                        Usuario / Correo
+                    </label>
+                    <input asp-for="Email" class="gold-input rounded-2xl px-5 py-4 w-full text-sm font-semibold placeholder:text-stone-500" placeholder="admin@sistema.com" />
+                    <span asp-validation-for="Email" class="text-rose-400 text-xs px-2 font-semibold"></span>
+                </div>
+
+                <div class="space-y-2">
+                    <label asp-for="Password" class="text-[11px] font-black uppercase tracking-[0.2em] text-[#F5E6B3] px-2 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm text-[#D4AF37]">key</span>
+                        Contraseña
+                    </label>
+                    <input asp-for="Password" type="password" class="gold-input rounded-2xl px-5 py-4 w-full text-sm font-semibold placeholder:text-stone-500" placeholder="••••••••" />
+                    <span asp-validation-for="Password" class="text-rose-400 text-xs px-2 font-semibold"></span>
+                </div>
+
+                <button type="submit" class="btn-chichera-gold w-full py-4 rounded-2xl font-black text-sm tracking-[0.15em] uppercase flex items-center justify-center gap-2 cursor-pointer mt-8">
+                    <span>Acceder al Sistema</span>
+                    <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                </button>
+            </form>
+
+            <!-- Footer Badge -->
+            <div class="mt-8 pt-6 border-t border-[#D4AF37]/15 text-center flex items-center justify-between text-[10px] font-bold text-[#A89F91]/60 uppercase tracking-wider">
+                <span>Credi Jungles</span>
+                <span class="text-[#D4AF37]/80">Seguro • Privado</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

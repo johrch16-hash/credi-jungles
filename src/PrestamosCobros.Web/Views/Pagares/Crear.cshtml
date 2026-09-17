@@ -1,0 +1,314 @@
+@model PrestamosCobros.BLL.DTOs.PagareCreateDto
+@{
+    ViewData["Title"] = "Gestión de Pagarés";
+}
+
+<div class="space-y-10 pb-12 px-4">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row items-start md:items-center gap-5">
+        <div class="w-14 h-14 md:w-16 md:h-16 bg-teal-600 text-white rounded-[20px] md:rounded-[24px] flex items-center justify-center soft-raised-sm shrink-0">
+            <span class="material-symbols-outlined text-3xl md:text-4xl">contract</span>
+        </div>
+        <div>
+            <h2 class="text-2xl md:text-4xl font-black text-primary-container tracking-tighter">Generar Pagaré</h2>
+            <p class="text-secondary text-xs md:text-sm font-bold opacity-60">Creación de documento legal en PDF</p>
+        </div>
+    </div>
+
+    <div class="soft-card !p-5 md:!p-10">
+        <form asp-action="Crear" method="post" id="formPagare" target="_blank" class="space-y-8">
+            @Html.AntiForgeryToken()
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Buscador de Clientes -->
+                <div class="md:col-span-2 space-y-3">
+                    <label asp-for="ClienteId" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Autocompletar Cliente Existente</label>
+                    <select asp-for="ClienteId" asp-items="@ViewBag.Clientes" class="soft-input !py-4" id="selectCliente">
+                        <option value="">-- Llenado Manual --</option>
+                    </select>
+                </div>
+
+                <!-- Datos del Deudor -->
+                <div class="md:col-span-2">
+                    <h3 class="text-lg font-black text-primary-container mb-4 mt-4 border-b border-surface-container-low pb-2">1. Datos del Deudor</h3>
+                </div>
+
+                <div class="space-y-3">
+                    <label asp-for="NombreDeudor" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Nombre Completo</label>
+                    <input asp-for="NombreDeudor" class="soft-input !py-4" id="NombreDeudor" required />
+                </div>
+
+                <div class="space-y-3">
+                    <label asp-for="CedulaDeudor" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Cédula</label>
+                    <input asp-for="CedulaDeudor" class="soft-input !py-4" id="CedulaDeudor" required />
+                </div>
+
+                <div class="space-y-3">
+                    <label asp-for="EstadoCivil" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Estado Civil</label>
+                    <input asp-for="EstadoCivil" class="soft-input !py-4" placeholder="Soltero, Casado..." required />
+                </div>
+
+                <div class="space-y-3">
+                    <label asp-for="Profesion" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Profesión / Oficio</label>
+                    <input asp-for="Profesion" class="soft-input !py-4" required />
+                </div>
+
+                <div class="md:col-span-2 space-y-3">
+                    <label asp-for="DireccionHabitacion" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Dirección Exacta (Habitación)</label>
+                    <input asp-for="DireccionHabitacion" class="soft-input !py-4" required />
+                </div>
+
+                <!-- Fiador -->
+                <div class="md:col-span-2 bg-surface-container-low/50 p-6 rounded-3xl mt-4">
+                    <div class="flex items-center gap-3 mb-4">
+                        <input type="checkbox" asp-for="TieneFiador" id="TieneFiador" class="w-5 h-5 text-teal-600 rounded" />
+                        <label for="TieneFiador" class="font-black text-primary-container cursor-pointer select-none">Añadir Fiador Solidario / Cofiador</label>
+                    </div>
+
+                    <div id="fiadorSection" class="hidden grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                        <div class="space-y-3">
+                            <label asp-for="NombreFiador" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Nombre del Fiador</label>
+                            <input asp-for="NombreFiador" class="soft-input !py-4" id="NombreFiador" />
+                        </div>
+                        <div class="space-y-3">
+                            <label asp-for="CedulaFiador" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Cédula del Fiador</label>
+                            <input asp-for="CedulaFiador" class="soft-input !py-4" id="CedulaFiador" />
+                        </div>
+                        <div class="md:col-span-2 space-y-3">
+                            <label asp-for="DireccionFiador" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Dirección del Fiador</label>
+                            <input asp-for="DireccionFiador" class="soft-input !py-4" id="DireccionFiador" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Datos Financieros -->
+                <div class="md:col-span-2">
+                    <h3 class="text-lg font-black text-primary-container mb-4 mt-4 border-b border-surface-container-low pb-2">2. Condiciones Financieras</h3>
+                </div>
+
+                <div class="space-y-3">
+                    <label asp-for="Monto" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Monto Principal (₡)</label>
+                    <input asp-for="Monto" type="number" step="0.01" min="1" class="soft-input !py-4" id="montoNum" required />
+                </div>
+
+                <div class="space-y-3">
+                    <label asp-for="MontoLetras" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Monto en Letras (Automático)</label>
+                    <input asp-for="MontoLetras" class="soft-input !py-4 bg-gray-100" id="montoStr" required readonly />
+                </div>
+
+                <div class="space-y-3">
+                    <label asp-for="TasaCorriente" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Interés Corriente Mensual (%)</label>
+                    <input asp-for="TasaCorriente" type="number" step="0.01" class="soft-input !py-4" placeholder="Ej: 20" required />
+                </div>
+
+                <div class="space-y-3">
+                    <label asp-for="TasaMoratoria" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Interés Moratorio Mensual (%)</label>
+                    <input asp-for="TasaMoratoria" type="number" step="0.01" class="soft-input !py-4" placeholder="Ej: 5" required />
+                </div>
+
+                <div class="space-y-3 md:col-span-2">
+                    <label asp-for="FechaVencimiento" class="text-[11px] font-black uppercase tracking-[0.2em] text-primary-container px-3 opacity-60">Fecha de Vencimiento</label>
+                    <input asp-for="FechaVencimiento" type="date" class="soft-input !py-4 w-full md:w-1/2" required />
+                </div>
+            </div>
+
+            <div class="flex flex-col-reverse md:flex-row justify-end gap-3 md:gap-5 pt-8">
+                <a href="@Url.Action("Index", "Admin")" class="soft-button !py-4 !px-8 text-secondary uppercase font-black text-xs text-center w-full md:w-auto">Cancelar</a>
+                <button type="submit" class="soft-button soft-button-primary !py-4 !px-8 flex items-center justify-center gap-3 font-black text-xs shadow-xl w-full md:w-auto">
+                    <span class="material-symbols-outlined">picture_as_pdf</span>
+                    GENERAR PAGARÉ (PDF)
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Mostrar/Ocultar fiador
+    const checkFiador = document.getElementById('TieneFiador');
+    const fiadorSection = document.getElementById('fiadorSection');
+    
+    checkFiador.addEventListener('change', () => {
+        if(checkFiador.checked) {
+            fiadorSection.classList.remove('hidden');
+            document.getElementById('NombreFiador').required = true;
+            document.getElementById('CedulaFiador').required = true;
+            document.getElementById('DireccionFiador').required = true;
+        } else {
+            fiadorSection.classList.add('hidden');
+            document.getElementById('NombreFiador').required = false;
+            document.getElementById('CedulaFiador').required = false;
+            document.getElementById('DireccionFiador').required = false;
+        }
+    });
+
+    // Autocompletar cliente
+    const selectCliente = document.getElementById('selectCliente');
+    selectCliente.addEventListener('change', async () => {
+        const id = selectCliente.value;
+        if(id) {
+            const res = await fetch(`/Pagares/ObtenerClienteInfo?clienteId=${id}`);
+            if(res.ok) {
+                const data = await res.json();
+                document.getElementById('NombreDeudor').value = data.nombre;
+                document.getElementById('CedulaDeudor').value = data.cedula;
+            }
+        }
+    });
+
+    // Numero a Letras
+    const montoNum = document.getElementById('montoNum');
+    const montoStr = document.getElementById('montoStr');
+
+    function NumeroALetras(num) {
+        var data = {
+            numero: num,
+            enteros: Math.floor(num),
+            centavos: (((Math.round(num * 100)) - (Math.floor(num) * 100))),
+            letrasCentavos: "",
+            letrasMonedaPlural: 'colones',
+            letrasMonedaSingular: 'colón',
+            letrasMonedaCentavoPlural: 'céntimos',
+            letrasMonedaCentavoSingular: 'céntimo'
+        };
+
+        if (data.centavos > 0) {
+            data.letrasCentavos = "con " + (function (){
+                if (data.centavos == 1)
+                    return Millones(data.centavos) + " " + data.letrasMonedaCentavoSingular;
+                else
+                    return Millones(data.centavos) + " " + data.letrasMonedaCentavoPlural;
+                })();
+        };
+
+        if(data.enteros == 0)
+            return "Cero " + data.letrasMonedaPlural + " " + data.letrasCentavos;
+        if (data.enteros == 1)
+            return Millones(data.enteros) + " " + data.letrasMonedaSingular + " " + data.letrasCentavos;
+        else
+            return Millones(data.enteros) + " " + data.letrasMonedaPlural + " " + data.letrasCentavos;
+    }
+
+    function Unidades(num){
+        switch(num)
+        {
+            case 1: return "Un";
+            case 2: return "Dos";
+            case 3: return "Tres";
+            case 4: return "Cuatro";
+            case 5: return "Cinco";
+            case 6: return "Seis";
+            case 7: return "Siete";
+            case 8: return "Ocho";
+            case 9: return "Nueve";
+        }
+        return "";
+    }
+
+    function Decenas(num){
+        let decena = Math.floor(num/10);
+        let unidad = num - (decena * 10);
+        switch(decena)
+        {
+            case 1:
+                switch(unidad)
+                {
+                    case 0: return "Diez";
+                    case 1: return "Once";
+                    case 2: return "Doce";
+                    case 3: return "Trece";
+                    case 4: return "Catorce";
+                    case 5: return "Quince";
+                    default: return "Dieci" + Unidades(unidad).toLowerCase();
+                }
+            case 2:
+                switch(unidad)
+                {
+                    case 0: return "Veinte";
+                    default: return "Veinti" + Unidades(unidad).toLowerCase();
+                }
+            case 3: return DecenasY("Treinta", unidad);
+            case 4: return DecenasY("Cuarenta", unidad);
+            case 5: return DecenasY("Cincuenta", unidad);
+            case 6: return DecenasY("Sesenta", unidad);
+            case 7: return DecenasY("Setenta", unidad);
+            case 8: return DecenasY("Ochenta", unidad);
+            case 9: return DecenasY("Noventa", unidad);
+            case 0: return Unidades(unidad);
+        }
+        return "";
+    }
+
+    function DecenasY(strSin, numUnidades) {
+        if (numUnidades > 0) return strSin + " y " + Unidades(numUnidades).toLowerCase()
+        return strSin;
+    }
+
+    function Centenas(num) {
+        let centenas = Math.floor(num / 100);
+        let decenas = num - (centenas * 100);
+        switch(centenas)
+        {
+            case 1:
+                if (decenas > 0) return "Ciento " + Decenas(decenas);
+                return "Cien";
+            case 2: return "Doscientos " + Decenas(decenas);
+            case 3: return "Trescientos " + Decenas(decenas);
+            case 4: return "Cuatrocientos " + Decenas(decenas);
+            case 5: return "Quinientos " + Decenas(decenas);
+            case 6: return "Seiscientos " + Decenas(decenas);
+            case 7: return "Setecientos " + Decenas(decenas);
+            case 8: return "Ochocientos " + Decenas(decenas);
+            case 9: return "Novecientos " + Decenas(decenas);
+        }
+        return Decenas(decenas);
+    }
+
+    function Seccion(num, divisor, strSingular, strPlural) {
+        let cientos = Math.floor(num / divisor)
+        let resto = num - (cientos * divisor)
+        let letras = "";
+        if (cientos > 0)
+            if (cientos > 1)
+                letras = Centenas(cientos) + " " + strPlural;
+            else
+                letras = strSingular;
+        if (resto > 0)
+            letras += "";
+        return letras;
+    }
+
+    function Miles(num) {
+        let divisor = 1000;
+        let cientos = Math.floor(num / divisor)
+        let resto = num - (cientos * divisor)
+        let strMiles = Seccion(num, divisor, "Un Mil", "Mil");
+        let strCentenas = Centenas(resto);
+        if(strMiles == "")
+            return strCentenas;
+        return strMiles + " " + strCentenas;
+    }
+
+    function Millones(num) {
+        let divisor = 1000000;
+        let cientos = Math.floor(num / divisor)
+        let resto = num - (cientos * divisor)
+        let strMillones = Seccion(num, divisor, "Un Millón de", "Millones de");
+        let strMiles = Miles(resto);
+        if(strMillones == "")
+            return strMiles;
+        return strMillones + " " + strMiles;
+    }
+
+    montoNum.addEventListener('input', () => {
+        const val = parseFloat(montoNum.value);
+        if(!isNaN(val)) {
+            montoStr.value = NumeroALetras(val).toUpperCase().replace(" DE COLONES", " COLONES").replace(" DE COLÓN", " COLÓN");
+        } else {
+            montoStr.value = '';
+        }
+    });
+
+</script>
+}

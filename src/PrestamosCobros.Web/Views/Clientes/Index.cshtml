@@ -1,0 +1,93 @@
+@model List<PrestamosCobros.BLL.DTOs.ClienteListDto>
+<div class="space-y-10 pb-12">
+    <!-- Header - Premium Typography -->
+    <div class="flex justify-between items-center px-2">
+        <div>
+            <h2 class="text-4xl font-black text-white tracking-tighter">Clientes</h2>
+            <p class="text-[#C8B89E] text-sm font-bold opacity-80">Directorio centralizado de deudores</p>
+        </div>
+        <a href="@Url.Action("Crear")" class="w-16 h-16 bg-gradient-to-br from-[#F4E5B0] via-[#D4AF37] to-[#8C6239] text-[#160E09] rounded-[24px] flex items-center justify-center shadow-[0_8px_25px_rgba(212,175,55,0.4)] active:scale-90 transition-transform" title="Registrar Nuevo Cliente">
+            <span class="material-symbols-outlined text-3xl font-black">person_add</span>
+        </a>
+    </div>
+
+    <!-- Search Bar - Soft Inset -->
+    <div class="px-2">
+        <div class="soft-card !p-0 !rounded-[24px] flex items-center bg-[#140C07]/80 border border-[#D4AF37]/30 overflow-hidden shadow-lg">
+            <div class="pl-6 text-[#D4AF37]">
+                <span class="material-symbols-outlined text-3xl">search</span>
+            </div>
+            <input type="text" id="clienteSearch" 
+                   class="w-full bg-transparent border-none focus:ring-0 h-16 text-lg font-bold text-white placeholder:text-[#A89F91]/50 px-4 outline-none" 
+                   placeholder="Buscar por nombre o teléfono..." />
+            <div class="pr-6 text-[#D4AF37]/60">
+                <span class="material-symbols-outlined">filter_list</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clients List - Elevated Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 px-2" id="clientesGrid">
+        @foreach (var item in Model)
+        {
+            <div class="cliente-card soft-card flex flex-col gap-6 active:scale-[0.98] transition-all duration-300 group cursor-pointer" 
+                 data-nombre="@item.NombreCompleto.ToLower()" 
+                 data-telefono="@item.Telefono"
+                 onclick="location.href='@Url.Action("Detalle", new { id = item.ClienteId })'">
+                
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center gap-5">
+                        <div class="w-16 h-16 rounded-[22px] bg-gradient-to-br from-[#2A1C14] to-[#160E09] border border-[#D4AF37]/30 text-[#F4E5B0] flex items-center justify-center shadow-md font-black text-2xl group-hover:scale-110 transition-transform">
+                            @(item.NombreCompleto != null && item.NombreCompleto.Length > 0 ? item.NombreCompleto.Substring(0, 1).ToUpper() : "U")
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-black text-white leading-tight group-hover:text-[#F4E5B0] transition-colors">@item.NombreCompleto</h3>
+                            <div class="flex items-center gap-2 text-[#C8B89E] mt-1">
+                                <span class="material-symbols-outlined text-sm text-[#D4AF37]">call</span>
+                                <span class="text-xs font-black tracking-widest">@item.Telefono</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="soft-badge @(item.NivelAtrasos > 0 ? "bg-[#4C0519]/80 text-[#FDA4AF] border border-[#F43F5E]/40" : "bg-[#1B4332]/80 text-[#52B788] border border-[#52B788]/40")">
+                        @(item.NivelAtrasos > 0 ? "En Mora" : "Al Día")
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center py-4 border-t border-[#D4AF37]/20 border-dashed">
+                    <div>
+                        <p class="text-[10px] font-black text-[#C8B89E] uppercase tracking-[0.2em] mb-1">Estado</p>
+                        <p class="text-sm font-black text-white">@item.Estado</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] font-black text-[#C8B89E] uppercase tracking-[0.2em] mb-1">Atrasos</p>
+                        <p class="text-sm font-black @(item.NivelAtrasos > 0 ? "text-[#FB7185]" : "text-[#52B788]")">@item.NivelAtrasos CUOTAS</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end text-[#F4E5B0] opacity-60 group-hover:opacity-100 transition-opacity">
+                    <span class="text-[10px] font-black uppercase tracking-widest mr-2">Ver Perfil</span>
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward_ios</span>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('clienteSearch').addEventListener('input', function (e) {
+            const term = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.cliente-card');
+            
+            cards.forEach(card => {
+                const nombre = card.dataset.nombre;
+                const telefono = card.dataset.telefono;
+                if (nombre.includes(term) || telefono.includes(term)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    </script>
+}

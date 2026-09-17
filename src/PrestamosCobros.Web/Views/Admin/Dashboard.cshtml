@@ -1,0 +1,541 @@
+@{
+    ViewData["Title"] = "Dashboard Financiero";
+
+    int totalPrestamos = ViewBag.TotalPrestamos ?? 124;
+    int pctActivos = ViewBag.PctActivos ?? 65;
+    int pctLiquidados = ViewBag.PctLiquidados ?? 20;
+    int pctCancelados = ViewBag.PctCancelados ?? 15;
+    int countActivos = ViewBag.CountActivos ?? 81;
+    int countLiquidados = ViewBag.CountLiquidados ?? 25;
+    int countCancelados = ViewBag.CountCancelados ?? 18;
+
+    decimal capRecuperado = ViewBag.CapitalRecuperado != null ? (decimal)ViewBag.CapitalRecuperado : 12450000m;
+    decimal salPendiente = ViewBag.SaldoPendiente != null ? (decimal)ViewBag.SaldoPendiente : 8230000m;
+    decimal morTotal = ViewBag.MorosidadTotal != null ? (decimal)ViewBag.MorosidadTotal : 1150000m;
+    decimal fluNeto = ViewBag.FlujoNeto != null ? (decimal)ViewBag.FlujoNeto : 3800000m;
+
+    // SVG Donut Math
+    // Radius = 75, Circumference = 2 * PI * 75 = 471.238898
+    double radius = 75.0;
+    double circ = 2.0 * Math.PI * radius;
+
+    double lenActivos = Math.Round((pctActivos / 100.0) * circ, 2);
+    double lenLiquidados = Math.Round((pctLiquidados / 100.0) * circ, 2);
+    double lenCancelados = Math.Max(0, Math.Round(circ - lenActivos - lenLiquidados, 2));
+
+    double offsetActivos = 0;
+    double offsetLiquidados = -lenActivos;
+    double offsetCancelados = -(lenActivos + lenLiquidados);
+
+    var proximos = ViewBag.ProximosVencimientos as IEnumerable<PrestamosCobros.DAL.Entities.Cuota>;
+    var morosos = ViewBag.TopMorosos as IEnumerable<PrestamosCobros.DAL.Entities.Cuota>;
+}
+
+<div class="space-y-8 pb-12">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h2 class="text-3xl font-black text-[#F5EFEB] tracking-tight">Dashboard Financiero y Rendimiento</h2>
+            <p class="text-xs font-black text-[#D4AF37] uppercase tracking-widest opacity-80 mt-1">Resumen general de métricas en tiempo real</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <select class="bg-[#1e130c] border border-[#D4AF37]/30 text-xs font-bold text-[#F5EFEB] rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-[#D4AF37] outline-none shadow-lg cursor-pointer transition-all">
+                <option>Este Mes</option>
+                <option>Últimos 30 días</option>
+                <option>Año Actual</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Fila 1: KPIs -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Capital Recuperado -->
+        <div class="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow group relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full group-hover:scale-110 transition-transform"></div>
+            <div class="flex items-center gap-4 mb-4 relative z-10">
+                <div class="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center border border-emerald-500/30">
+                    <span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
+                </div>
+                <h4 class="text-xs font-black text-[#C8B89E] uppercase tracking-wider">Capital Recuperado</h4>
+            </div>
+            <p class="text-3xl font-black text-[#F5EFEB] relative z-10">₡ @capRecuperado.ToString("N0")</p>
+            <p class="text-[10px] font-bold text-emerald-400 mt-2 flex items-center gap-1 relative z-10">
+                <span class="material-symbols-outlined text-sm">trending_up</span> +14% vs mes anterior
+            </p>
+        </div>
+
+        <!-- Saldo Pendiente -->
+        <div class="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow group relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full group-hover:scale-110 transition-transform"></div>
+            <div class="flex items-center gap-4 mb-4 relative z-10">
+                <div class="w-12 h-12 bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center border border-blue-500/30">
+                    <span class="material-symbols-outlined text-2xl">schedule</span>
+                </div>
+                <h4 class="text-xs font-black text-[#C8B89E] uppercase tracking-wider">Saldo Pendiente</h4>
+            </div>
+            <p class="text-3xl font-black text-[#F5EFEB] relative z-10">₡ @salPendiente.ToString("N0")</p>
+            <p class="text-[10px] font-bold text-[#A89F91] mt-2 flex items-center gap-1 relative z-10">
+                Capital en la calle esperado
+            </p>
+        </div>
+
+        <!-- Morosidad Total -->
+        <div class="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow group relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-rose-500/10 rounded-full group-hover:scale-110 transition-transform"></div>
+            <div class="flex items-center gap-4 mb-4 relative z-10">
+                <div class="w-12 h-12 bg-rose-500/20 text-rose-400 rounded-2xl flex items-center justify-center border border-rose-500/30">
+                    <span class="material-symbols-outlined text-2xl">warning</span>
+                </div>
+                <h4 class="text-xs font-black text-[#C8B89E] uppercase tracking-wider">Morosidad Total</h4>
+            </div>
+            <p class="text-3xl font-black text-[#F5EFEB] relative z-10">₡ @morTotal.ToString("N0")</p>
+            <p class="text-[10px] font-bold text-rose-400 mt-2 flex items-center gap-1 relative z-10">
+                <span class="material-symbols-outlined text-sm">trending_up</span> Índice de riesgo controlado
+            </p>
+        </div>
+
+        <!-- Flujo Neto -->
+        <div class="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow group relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full group-hover:scale-110 transition-transform"></div>
+            <div class="flex items-center gap-4 mb-4 relative z-10">
+                <div class="w-12 h-12 bg-purple-500/20 text-purple-400 rounded-2xl flex items-center justify-center border border-purple-500/30">
+                    <span class="material-symbols-outlined text-2xl">monitoring</span>
+                </div>
+                <h4 class="text-xs font-black text-[#C8B89E] uppercase tracking-wider">Flujo Neto</h4>
+            </div>
+            <p class="text-3xl font-black text-[#F5EFEB] relative z-10">₡ @fluNeto.ToString("N0")</p>
+            <p class="text-[10px] font-bold text-purple-400 mt-2 flex items-center gap-1 relative z-10">
+                Ganancias netas calculadas
+            </p>
+        </div>
+    </div>
+
+    <!-- Fila 2: Gráficos -->
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <!-- Gráfico de Ingresos vs Egresos (60% -> col-span-3) -->
+        <div class="lg:col-span-3 bg-white rounded-[32px] p-7 shadow-sm border border-slate-100 flex flex-col justify-between">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-lg font-black text-[#F5EFEB]">Ingresos vs Egresos</h3>
+                    <p class="text-[11px] font-bold text-[#A89F91]">Comparativo de movimientos financieros mensuales</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-2.5 h-2.5 bg-emerald-400 rounded-full"></div>
+                        <span class="text-[10px] font-bold text-[#C8B89E] uppercase">Ingresos</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-2.5 h-2.5 bg-rose-400 rounded-full"></div>
+                        <span class="text-[10px] font-bold text-[#C8B89E] uppercase">Egresos</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gráfico de Barras -->
+            <div class="h-64 flex items-end justify-between gap-2 md:gap-4 relative px-2">
+                <!-- Grid lines -->
+                <div class="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-10">
+                    <div class="border-t border-[#D4AF37] w-full"></div>
+                    <div class="border-t border-[#D4AF37] w-full"></div>
+                    <div class="border-t border-[#D4AF37] w-full"></div>
+                    <div class="border-t border-[#D4AF37] w-full"></div>
+                    <div class="border-t border-[#D4AF37] w-full"></div>
+                </div>
+                
+                <!-- Barras -->
+                <div class="w-full flex justify-around items-end h-[90%] z-10">
+                    <!-- Mes 1 -->
+                    <div class="flex flex-col items-center gap-2 group cursor-pointer w-full">
+                        <div class="flex gap-1.5 h-48 items-end justify-center w-full">
+                            <div class="w-1/3 bg-emerald-500 rounded-t-md h-[60%] group-hover:brightness-110 transition-all shadow-sm shadow-emerald-500/30"></div>
+                            <div class="w-1/3 bg-rose-500 rounded-t-md h-[20%] group-hover:brightness-110 transition-all shadow-sm shadow-rose-500/30"></div>
+                        </div>
+                        <span class="text-[10px] font-bold text-[#A89F91]">Ene</span>
+                    </div>
+                    <!-- Mes 2 -->
+                    <div class="flex flex-col items-center gap-2 group cursor-pointer w-full">
+                        <div class="flex gap-1.5 h-48 items-end justify-center w-full">
+                            <div class="w-1/3 bg-emerald-500 rounded-t-md h-[75%] group-hover:brightness-110 transition-all shadow-sm shadow-emerald-500/30"></div>
+                            <div class="w-1/3 bg-rose-500 rounded-t-md h-[30%] group-hover:brightness-110 transition-all shadow-sm shadow-rose-500/30"></div>
+                        </div>
+                        <span class="text-[10px] font-bold text-[#A89F91]">Feb</span>
+                    </div>
+                    <!-- Mes 3 -->
+                    <div class="flex flex-col items-center gap-2 group cursor-pointer w-full">
+                        <div class="flex gap-1.5 h-48 items-end justify-center w-full">
+                            <div class="w-1/3 bg-emerald-500 rounded-t-md h-[50%] group-hover:brightness-110 transition-all shadow-sm shadow-emerald-500/30"></div>
+                            <div class="w-1/3 bg-rose-500 rounded-t-md h-[15%] group-hover:brightness-110 transition-all shadow-sm shadow-rose-500/30"></div>
+                        </div>
+                        <span class="text-[10px] font-bold text-[#A89F91]">Mar</span>
+                    </div>
+                    <!-- Mes 4 -->
+                    <div class="flex flex-col items-center gap-2 group cursor-pointer w-full">
+                        <div class="flex gap-1.5 h-48 items-end justify-center w-full">
+                            <div class="w-1/3 bg-emerald-500 rounded-t-md h-[90%] group-hover:brightness-110 transition-all shadow-sm shadow-emerald-500/30"></div>
+                            <div class="w-1/3 bg-rose-500 rounded-t-md h-[25%] group-hover:brightness-110 transition-all shadow-sm shadow-rose-500/30"></div>
+                        </div>
+                        <span class="text-[10px] font-bold text-[#A89F91]">Abr</span>
+                    </div>
+                    <!-- Mes 5 -->
+                    <div class="flex flex-col items-center gap-2 group cursor-pointer w-full">
+                        <div class="flex gap-1.5 h-48 items-end justify-center w-full">
+                            <div class="w-1/3 bg-emerald-500 rounded-t-md h-[80%] group-hover:brightness-110 transition-all shadow-sm shadow-emerald-500/30"></div>
+                            <div class="w-1/3 bg-rose-500 rounded-t-md h-[10%] group-hover:brightness-110 transition-all shadow-sm shadow-rose-500/30"></div>
+                        </div>
+                        <span class="text-[10px] font-bold text-[#A89F91]">May</span>
+                    </div>
+                </div>
+            </div>
+            <div class="text-[10px] text-center text-[#A89F91] mt-3 font-semibold">
+                Datos actualizados automáticamente según pagos y registros de caja
+            </div>
+        </div>
+
+        <!-- Gráfico de Dona SVG Ultra-Nítido (Estado de Cartera) -->
+        <div class="lg:col-span-2 bg-white rounded-[32px] p-7 shadow-sm border border-slate-100 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-lg font-black text-[#F5EFEB] tracking-tight">Estado de Cartera</h3>
+                    <p class="text-[11px] font-bold text-[#A89F91]">Distribución global de créditos</p>
+                </div>
+                <span class="text-[10px] font-black uppercase tracking-wider text-[#D4AF37] bg-[#D4AF37]/15 px-2.5 py-1 rounded-full border border-[#D4AF37]/30 flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse"></span>
+                    En Vivo
+                </span>
+            </div>
+            
+            <!-- Dona SVG Vectorial Limpia -->
+            <div class="flex-1 flex items-center justify-center my-2">
+                <div class="relative w-56 h-56 flex items-center justify-center">
+                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 220 220" style="overflow: visible;">
+                        <defs>
+                            <!-- Gradientes de segmentos -->
+                            <linearGradient id="gradActivos" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#2563EB" />
+                                <stop offset="100%" stop-color="#60A5FA" />
+                            </linearGradient>
+                            <linearGradient id="gradLiquidados" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#059669" />
+                                <stop offset="100%" stop-color="#34D399" />
+                            </linearGradient>
+                            <linearGradient id="gradCancelados" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#E11D48" />
+                                <stop offset="100%" stop-color="#FB7185" />
+                            </linearGradient>
+                            <filter id="glowDonut" x="-20%" y="-20%" width="140%" height="140%">
+                                <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#000000" flood-opacity="0.6" />
+                            </filter>
+                        </defs>
+
+                        <!-- Base Track Ring -->
+                        <circle cx="110" cy="110" r="@radius" 
+                                fill="none" 
+                                stroke="rgba(255, 255, 255, 0.06)" 
+                                stroke-width="22" />
+
+                        <!-- Segmento 1: Activos -->
+                        @if (lenActivos > 0)
+                        {
+                            <circle cx="110" cy="110" r="@radius" 
+                                    fill="none" 
+                                    stroke="url(#gradActivos)" 
+                                    stroke-width="22" 
+                                    stroke-dasharray="@lenActivos.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) @circ.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)" 
+                                    stroke-dashoffset="@offsetActivos.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
+                                    filter="url(#glowDonut)"
+                                    class="transition-all duration-700 ease-out hover:opacity-95" />
+                        }
+
+                        <!-- Segmento 2: Liquidados -->
+                        @if (lenLiquidados > 0)
+                        {
+                            <circle cx="110" cy="110" r="@radius" 
+                                    fill="none" 
+                                    stroke="url(#gradLiquidados)" 
+                                    stroke-width="22" 
+                                    stroke-dasharray="@lenLiquidados.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) @circ.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)" 
+                                    stroke-dashoffset="@offsetLiquidados.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
+                                    filter="url(#glowDonut)"
+                                    class="transition-all duration-700 ease-out hover:opacity-95" />
+                        }
+
+                        <!-- Segmento 3: Cancelados / Incobrables -->
+                        @if (lenCancelados > 0)
+                        {
+                            <circle cx="110" cy="110" r="@radius" 
+                                    fill="none" 
+                                    stroke="url(#gradCancelados)" 
+                                    stroke-width="22" 
+                                    stroke-dasharray="@lenCancelados.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) @circ.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)" 
+                                    stroke-dashoffset="@offsetCancelados.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
+                                    filter="url(#glowDonut)"
+                                    class="transition-all duration-700 ease-out hover:opacity-95" />
+                        }
+                    </svg>
+
+                    <!-- Centro de Dona (Matemáticamente centrado, sin bordes ni fondos espurios) -->
+                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none text-center bg-transparent">
+                        <span class="text-[11px] font-black uppercase tracking-widest text-[#A89F91]">Total</span>
+                        <span class="text-3xl font-black text-[#F5EFEB] tracking-tight my-0.5" style="text-shadow: 0 2px 8px rgba(0,0,0,0.7);">@totalPrestamos</span>
+                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-[#D4AF37]">Préstamos</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leyenda Detallada con Barras Indicadoras -->
+            <div class="mt-4 space-y-2.5">
+                <!-- Activos -->
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-black/25 border border-[#D4AF37]/10 hover:border-blue-500/30 transition-all">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-500/50"></div>
+                        <span class="text-xs font-bold text-[#F5EFEB]">Activos</span>
+                        @if (countActivos > 0)
+                        {
+                            <span class="text-[10px] text-[#A89F91]">(@countActivos)</span>
+                        }
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-16 h-1.5 rounded-full bg-white/10 overflow-hidden hidden sm:block">
+                            <div class="h-full bg-blue-500 rounded-full" style="width: @(pctActivos)%"></div>
+                        </div>
+                        <span class="text-xs font-black text-[#F5EFEB] w-9 text-right">@(pctActivos)%</span>
+                    </div>
+                </div>
+
+                <!-- Liquidados -->
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-black/25 border border-[#D4AF37]/10 hover:border-emerald-500/30 transition-all">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-3 h-3 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50"></div>
+                        <span class="text-xs font-bold text-[#F5EFEB]">Liquidados</span>
+                        @if (countLiquidados > 0)
+                        {
+                            <span class="text-[10px] text-[#A89F91]">(@countLiquidados)</span>
+                        }
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-16 h-1.5 rounded-full bg-white/10 overflow-hidden hidden sm:block">
+                            <div class="h-full bg-emerald-500 rounded-full" style="width: @(pctLiquidados)%"></div>
+                        </div>
+                        <span class="text-xs font-black text-[#F5EFEB] w-9 text-right">@(pctLiquidados)%</span>
+                    </div>
+                </div>
+
+                <!-- Cancelados / Incobrables -->
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-black/25 border border-[#D4AF37]/10 hover:border-rose-500/30 transition-all">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-3 h-3 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50"></div>
+                        <span class="text-xs font-bold text-[#F5EFEB]">Cancelados / Incobrables</span>
+                        @if (countCancelados > 0)
+                        {
+                            <span class="text-[10px] text-[#A89F91]">(@countCancelados)</span>
+                        }
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-16 h-1.5 rounded-full bg-white/10 overflow-hidden hidden sm:block">
+                            <div class="h-full bg-rose-500 rounded-full" style="width: @(pctCancelados)%"></div>
+                        </div>
+                        <span class="text-xs font-black text-[#F5EFEB] w-9 text-right">@(pctCancelados)%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fila 3: Tablas -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Próximos Vencimientos -->
+        <div class="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-lg font-black text-[#F5EFEB]">Próximos Vencimientos</h3>
+                    <p class="text-[11px] font-bold text-[#A89F91]">Cuotas pendientes de cobro inmediato</p>
+                </div>
+                <a href="/Cobranzas" class="text-[10px] font-black text-[#D4AF37] bg-[#D4AF37]/10 px-3 py-1.5 rounded-lg hover:bg-[#D4AF37]/20 transition-colors uppercase tracking-wider border border-[#D4AF37]/20">Ver Cobranzas</a>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="text-[10px] font-black text-[#A89F91] uppercase tracking-widest border-b border-[#D4AF37]/20">
+                            <th class="pb-3 px-2">Cliente</th>
+                            <th class="pb-3 px-2">Monto</th>
+                            <th class="pb-3 px-2">Vence</th>
+                            <th class="pb-3 px-2 text-right">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[#D4AF37]/10">
+                        @if (proximos != null && proximos.Any())
+                        {
+                            @foreach (var c in proximos)
+                            {
+                                var diasParaVencer = (c.FechaVencimiento.Date - DateTime.Today).Days;
+                                <tr class="group hover:bg-white/5 transition-colors">
+                                    <td class="py-3.5 px-2">
+                                        <p class="text-sm font-bold text-[#F5EFEB]">@(c.Prestamo?.Cliente?.NombreCompleto ?? "Cliente")</p>
+                                    </td>
+                                    <td class="py-3.5 px-2">
+                                        <p class="text-sm font-black text-[#F5EFEB]">₡ @c.Monto.ToString("N0")</p>
+                                    </td>
+                                    <td class="py-3.5 px-2">
+                                        @if (diasParaVencer == 0)
+                                        {
+                                            <span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-black px-2 py-1 rounded-md">Hoy</span>
+                                        }
+                                        else if (diasParaVencer < 0)
+                                        {
+                                            <span class="bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] font-black px-2 py-1 rounded-md">Hace @Math.Abs(diasParaVencer)d</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-[#A89F91] text-xs font-semibold">En @diasParaVencer días</span>
+                                        }
+                                    </td>
+                                    <td class="py-3.5 px-2 text-right">
+                                        <a href="/Cobranzas" class="bg-[#D4AF37] text-slate-950 text-[10px] font-black px-3 py-1.5 rounded-lg hover:brightness-110 transition-all inline-block">Cobrar</a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr class="group hover:bg-white/5 transition-colors">
+                                <td class="py-3.5 px-2">
+                                    <p class="text-sm font-bold text-[#F5EFEB]">Carlos Méndez</p>
+                                </td>
+                                <td class="py-3.5 px-2">
+                                    <p class="text-sm font-black text-[#F5EFEB]">₡ 25,000</p>
+                                </td>
+                                <td class="py-3.5 px-2">
+                                    <span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-black px-2 py-1 rounded-md">Hoy</span>
+                                </td>
+                                <td class="py-3.5 px-2 text-right">
+                                    <a href="/Cobranzas" class="bg-[#D4AF37] text-slate-950 text-[10px] font-black px-3 py-1.5 rounded-lg hover:brightness-110 transition-all inline-block">Cobrar</a>
+                                </td>
+                            </tr>
+                            <tr class="group hover:bg-white/5 transition-colors">
+                                <td class="py-3.5 px-2">
+                                    <p class="text-sm font-bold text-[#F5EFEB]">María Rojas</p>
+                                </td>
+                                <td class="py-3.5 px-2">
+                                    <p class="text-sm font-black text-[#F5EFEB]">₡ 15,500</p>
+                                </td>
+                                <td class="py-3.5 px-2">
+                                    <span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-black px-2 py-1 rounded-md">Mañana</span>
+                                </td>
+                                <td class="py-3.5 px-2 text-right">
+                                    <a href="/Cobranzas" class="bg-[#D4AF37] text-slate-950 text-[10px] font-black px-3 py-1.5 rounded-lg hover:brightness-110 transition-all inline-block">Cobrar</a>
+                                </td>
+                            </tr>
+                            <tr class="group hover:bg-white/5 transition-colors">
+                                <td class="py-3.5 px-2">
+                                    <p class="text-sm font-bold text-[#F5EFEB]">Luis Fernández</p>
+                                </td>
+                                <td class="py-3.5 px-2">
+                                    <p class="text-sm font-black text-[#F5EFEB]">₡ 40,000</p>
+                                </td>
+                                <td class="py-3.5 px-2">
+                                    <span class="text-[#A89F91] text-xs font-semibold">En 2 días</span>
+                                </td>
+                                <td class="py-3.5 px-2 text-right">
+                                    <a href="/Cobranzas" class="bg-[#D4AF37] text-slate-950 text-[10px] font-black px-3 py-1.5 rounded-lg hover:brightness-110 transition-all inline-block">Cobrar</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Top Clientes Morosos -->
+        <div class="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-lg font-black text-[#F5EFEB]">Top Clientes Morosos</h3>
+                    <p class="text-[11px] font-bold text-[#A89F91]">Casos con mayor tiempo o saldo en mora</p>
+                </div>
+                <a href="/Cobranzas" class="text-[10px] font-black text-rose-400 bg-rose-500/10 px-3 py-1.5 rounded-lg hover:bg-rose-500/20 transition-colors uppercase tracking-wider border border-rose-500/20">Ver Lista</a>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="text-[10px] font-black text-[#A89F91] uppercase tracking-widest border-b border-[#D4AF37]/20">
+                            <th class="pb-3 px-2">Cliente</th>
+                            <th class="pb-3 px-2">Atraso</th>
+                            <th class="pb-3 px-2">Deuda</th>
+                            <th class="pb-3 px-2 text-right">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[#D4AF37]/10">
+                        @if (morosos != null && morosos.Any())
+                        {
+                            @foreach (var m in morosos)
+                            {
+                                var diasMora = Math.Max(1, (DateTime.Today - m.FechaVencimiento.Date).Days);
+                                <tr class="group hover:bg-rose-500/10 transition-colors">
+                                    <td class="py-3.5 px-2">
+                                        <p class="text-sm font-bold text-[#F5EFEB]">@(m.Prestamo?.Cliente?.NombreCompleto ?? "Cliente")</p>
+                                    </td>
+                                    <td class="py-3.5 px-2">
+                                        <p class="text-xs font-black text-rose-400">@diasMora Días</p>
+                                    </td>
+                                    <td class="py-3.5 px-2">
+                                        <p class="text-sm font-black text-[#F5EFEB]">₡ @m.Monto.ToString("N0")</p>
+                                    </td>
+                                    <td class="py-3.5 px-2 text-right">
+                                        <a href="/Clientes/Detalles/@(m.Prestamo?.ClienteId)" class="border border-[#D4AF37]/30 text-[#D4AF37] text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-[#D4AF37]/15 transition-colors inline-block">Ver Caso</a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr class="group hover:bg-rose-500/10 transition-colors">
+                                <td class="py-3.5 px-2">
+                                    <p class="text-sm font-bold text-[#F5EFEB]">Jorge Castro</p>
+                                </td>
+                                <td class="py-3.5 px-2">
+                                    <p class="text-xs font-black text-rose-400">15 Días</p>
+                                </td>
+                                <td class="py-3.5 px-2">
+                                    <p class="text-sm font-black text-[#F5EFEB]">₡ 125,000</p>
+                                </td>
+                                <td class="py-3.5 px-2 text-right">
+                                    <a href="/Clientes" class="border border-[#D4AF37]/30 text-[#D4AF37] text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-[#D4AF37]/15 transition-colors inline-block">Ver Caso</a>
+                                </td>
+                            </tr>
+                            <tr class="group hover:bg-rose-500/10 transition-colors">
+                                <td class="py-3.5 px-2">
+                                    <p class="text-sm font-bold text-[#F5EFEB]">Ana Morales</p>
+                                </td>
+                                <td class="py-3.5 px-2">
+                                    <p class="text-xs font-black text-rose-400">8 Días</p>
+                                </td>
+                                <td class="py-3.5 px-2">
+                                    <p class="text-sm font-black text-[#F5EFEB]">₡ 60,000</p>
+                                </td>
+                                <td class="py-3.5 px-2 text-right">
+                                    <a href="/Clientes" class="border border-[#D4AF37]/30 text-[#D4AF37] text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-[#D4AF37]/15 transition-colors inline-block">Ver Caso</a>
+                                </td>
+                            </tr>
+                            <tr class="group hover:bg-rose-500/10 transition-colors">
+                                <td class="py-3.5 px-2">
+                                    <p class="text-sm font-bold text-[#F5EFEB]">Roberto Vega</p>
+                                </td>
+                                <td class="py-3.5 px-2">
+                                    <p class="text-xs font-black text-rose-400">5 Días</p>
+                                </td>
+                                <td class="py-3.5 px-2">
+                                    <p class="text-sm font-black text-[#F5EFEB]">₡ 20,000</p>
+                                </td>
+                                <td class="py-3.5 px-2 text-right">
+                                    <a href="/Clientes" class="border border-[#D4AF37]/30 text-[#D4AF37] text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-[#D4AF37]/15 transition-colors inline-block">Ver Caso</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

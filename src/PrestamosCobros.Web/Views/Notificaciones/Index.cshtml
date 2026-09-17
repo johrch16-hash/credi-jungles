@@ -1,0 +1,99 @@
+@model List<PrestamosCobros.BLL.DTOs.NotificacionListDto>
+<div class="space-y-10 pb-12 px-4">
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="flex items-center gap-4 p-5 rounded-[24px] bg-emerald-50 border border-emerald-100 text-emerald-800 soft-raised-sm animate-pulse mb-6">
+            <span class="material-symbols-outlined text-emerald-600 text-2xl">check_circle</span>
+            <span class="text-xs font-black uppercase tracking-wider">@TempData["Mensaje"]</span>
+        </div>
+    }
+
+    <!-- Header -->
+    <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+        <div class="flex items-center gap-5">
+            <div class="w-16 h-16 bg-primary-container text-white rounded-[24px] flex items-center justify-center soft-raised-sm">
+                <span class="material-symbols-outlined text-4xl">notifications_active</span>
+            </div>
+            <div>
+                <h2 class="text-4xl font-black text-primary-container tracking-tighter">Alertas</h2>
+                <p class="text-secondary text-sm font-bold opacity-60">Historial de envíos automatizados</p>
+            </div>
+        </div>
+        
+        <div class="flex flex-wrap items-center gap-4 w-full xl:w-auto">
+            <form asp-controller="Notificaciones" asp-action="GenerarAhora" method="post" class="inline">
+                <button type="submit" class="soft-button !py-4 !px-6 !rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2" style="background: var(--color-surface); color: var(--color-primary-container);">
+                    <span class="material-symbols-outlined text-base">cached</span>
+                    <span>Generar Recordatorios</span>
+                </button>
+            </form>
+            <form asp-controller="Notificaciones" asp-action="EnviarAutomaticosAhora" method="post" class="inline">
+                <button type="submit" class="soft-button !py-4 !px-6 !rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2" style="background: #001f3f; color: white;">
+                    <span class="material-symbols-outlined text-base">send_and_archive</span>
+                    <span>Procesar Envío</span>
+                </button>
+            </form>
+            <div class="soft-badge bg-surface soft-raised-sm px-5 py-4">
+                <span class="text-[10px] font-black uppercase tracking-[0.2em] text-primary-container">Total: @Model.Count()</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="space-y-6">
+        @foreach (var item in Model)
+        {
+            <div class="soft-card !p-8 relative overflow-hidden group">
+                <!-- Indicador de Estado Sutil -->
+                <div class="absolute top-0 left-0 w-1 h-full @(item.Estado == "Enviado" ? "bg-emerald-400" : "bg-amber-400") opacity-40"></div>
+                
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
+                    <div class="flex items-center gap-5">
+                        <div class="w-14 h-14 rounded-2xl bg-surface flex items-center justify-center soft-recessed-sm text-primary-container group-hover:scale-105 transition-transform duration-300">
+                            <span class="material-symbols-outlined text-2xl @(item.Canal == "WhatsApp" ? "FILL-1" : "")">@(item.Canal == "WhatsApp" ? "chat_bubble" : "mail")</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-black text-primary-container tracking-tight">@item.ClienteNombre</h3>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-[9px] font-black text-secondary uppercase tracking-[0.2em] opacity-40">@item.Canal</span>
+                                <span class="w-1 h-1 rounded-full bg-secondary opacity-20"></span>
+                                <span class="text-[9px] font-black text-secondary uppercase tracking-[0.2em] opacity-40">@item.Tipo</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-2">
+                        <span class="text-[10px] font-black text-secondary uppercase tracking-widest opacity-40 order-2 md:order-1">
+                            @item.FechaCreacion.ToString("dd MMM, HH:mm")
+                        </span>
+                        <div class="flex items-center gap-2 order-1 md:order-2">
+                            @if (User.IsInRole("Master"))
+                            {
+                                <form asp-action="Eliminar" asp-controller="Notificaciones" method="post" onsubmit="return confirm('¿Está seguro de eliminar esta alerta?');" class="m-0 p-0">
+                                    <input type="hidden" name="id" value="@item.NotificacionId" />
+                                    <button type="submit" class="w-8 h-8 rounded-lg soft-card flex items-center justify-center text-red-500 hover:bg-red-50 hover:soft-raised-sm transition-all active:soft-recessed">
+                                        <span class="material-symbols-outlined text-sm">delete</span>
+                                    </button>
+                                </form>
+                            }
+                            <span class="soft-badge @(item.Estado == "Enviado" ? "bg-emerald-50 text-emerald-600 border-emerald-100/50" : "bg-amber-50 text-amber-600 border-amber-100/50")">
+                                @item.Estado.ToUpper()
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="soft-recessed-sm p-6 rounded-[24px] bg-surface/50 border border-white/40 flex items-start gap-4">
+                    <span class="material-symbols-outlined text-primary-container/20 mt-1">@(item.Tipo == "Recordatorio" ? "calendar_today" : "warning")</span>
+                    <p class="text-sm font-medium text-primary-container/80 leading-relaxed tracking-tight">
+                        @{
+                            // Limpieza de emojis antiguos para registros previos
+                            var mensajeLimpio = item.Mensaje.Replace("📅 ", "").Replace("⚠️ ", "");
+                        }
+                        @mensajeLimpio
+                    </p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración WhatsApp - CrediGest</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Outfit', sans-serif; background-color: #F0F2F5; }
+        .soft-card {
+            background: #F0F2F5;
+            box-shadow: 20px 20px 60px #ccd0d5, -20px -20px 60px #ffffff;
+            border-radius: 30px;
+        }
+        .soft-input {
+            background: #F0F2F5;
+            box-shadow: inset 6px 6px 12px #ccd0d5, inset -6px -6px 12px #ffffff;
+            border: none;
+            border-radius: 15px;
+        }
+        .soft-button {
+            background: #001f3f;
+            box-shadow: 6px 6px 12px #ccd0d5, -6px -6px 12px #ffffff;
+            color: white;
+            border-radius: 15px;
+            transition: all 0.2s;
+        }
+        .soft-button:active {
+            box-shadow: inset 4px 4px 8px #000, inset -4px -4px 8px #002e5c;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="soft-card p-10 w-full max-w-md">
+        <h1 class="text-2xl font-black text-[#001f3f] mb-2">WhatsApp API</h1>
+        <p class="text-xs text-gray-500 mb-8 font-semibold uppercase tracking-widest">Configuración Cloud API</p>
+
+        <form id="configForm" class="space-y-6">
+            <div>
+                <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-2">Phone Number ID</label>
+                <input type="text" id="phoneNumberId" required class="soft-input w-full px-5 py-4 text-sm focus:outline-none text-[#001f3f] font-bold">
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-2">Access Token</label>
+                <textarea id="accessToken" rows="4" placeholder="Ingresa el Access Token completo aquí solo si deseas cambiarlo" class="soft-input w-full px-5 py-4 text-sm focus:outline-none text-[#001f3f] font-bold resize-none"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-2">WhatsApp Business Account ID (WABA ID)</label>
+                <input type="text" id="wabaId" placeholder="ej. 123456789012345" class="soft-input w-full px-5 py-4 text-sm focus:outline-none text-[#001f3f] font-bold">
+                <p class="text-[9px] text-gray-400 mt-1 ml-2">Encuéntralo en Meta Business Suite → Configuración → Cuentas de WhatsApp → Tu cuenta.</p>
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-2">Número de Desvío (Notificación a Admin)</label>
+                <input type="text" id="adminPhone" placeholder="ej. 50688888888" class="soft-input w-full px-5 py-4 text-sm focus:outline-none text-[#001f3f] font-bold">
+                <p class="text-[9px] text-gray-400 mt-1 ml-2">Los mensajes entrantes de clientes se reenviarán automáticamente a este número de WhatsApp.</p>
+            </div>
+
+            <div id="statusMessage" class="text-center text-xs font-bold py-2 hidden"></div>
+
+            <button type="submit" class="soft-button w-full py-5 text-xs font-black uppercase tracking-widest mt-4">
+                Guardar Configuración
+            </button>
+        </form>
+
+        <div class="mt-8 pt-8 border-t border-gray-200">
+            <h2 class="text-lg font-black text-[#001f3f] mb-2">Prueba de Envío</h2>
+            <p class="text-[10px] text-gray-500 mb-4 font-semibold uppercase tracking-widest">Verifica tu conexión manual</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-2">Número Destino</label>
+                    <input type="text" id="testPhone" placeholder="+50688888888" class="soft-input w-full px-5 py-4 text-sm focus:outline-none text-[#001f3f] font-bold">
+                </div>
+                <button id="btnTest" type="button" class="soft-button w-full py-4 text-[10px] font-black uppercase tracking-widest bg-gray-600">
+                    Enviar Mensaje de Prueba
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-8 pt-8 border-t border-gray-200">
+            <h2 class="text-lg font-black text-[#001f3f] mb-2">Diagnóstico de Meta API</h2>
+            <p class="text-[10px] text-gray-500 mb-4 font-semibold uppercase tracking-widest">Comprobar suscripción y token</p>
+            
+            <button id="btnDebug" type="button" class="soft-button w-full py-4 text-[10px] font-black uppercase tracking-widest bg-gray-700">
+                Iniciar Diagnóstico de Conexión
+            </button>
+
+            <pre id="debugResult" class="mt-4 p-4 soft-input text-[10px] font-mono overflow-auto max-h-60 hidden whitespace-pre-wrap text-left"></pre>
+        </div>
+
+        <div class="mt-8 pt-8 border-t border-gray-200 flex justify-between items-center">
+            <a href="/" class="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-[#001f3f]">Volver al Panel</a>
+            <span id="fechaActualizacion" class="text-[8px] text-gray-400 font-bold uppercase"></span>
+        </div>
+    </div>
+
+    <script>
+        const statusDiv = document.getElementById('statusMessage');
+
+        // Cargar configuración inicial
+        async function cargarConfig() {
+            try {
+                const res = await fetch('/api/configuracion/whatsapp/obtener');
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('phoneNumberId').value = data.phoneNumberId;
+                    // El token se muestra enmascarado si es largo, o completo si se desea. 
+                    // El controlador retorna una versión enmascarada para seguridad en el GET.
+                    // Nota: Si el usuario quiere editar, debe pegar el nuevo token completo.
+                    document.getElementById('accessToken').placeholder = data.accessToken;
+                    document.getElementById('wabaId').value = data.wabaId || '';
+                    document.getElementById('adminPhone').value = data.adminPhone || '';
+                    if (data.fechaActualizacion) {
+                        const fecha = new Date(data.fechaActualizacion);
+                        document.getElementById('fechaActualizacion').innerText = `Actualizado: ${fecha.toLocaleDateString()} ${fecha.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                    }
+                }
+            } catch (err) {
+                console.error("Error cargando configuración:", err);
+            }
+        }
+
+        document.getElementById('configForm').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const payload = {
+                phoneNumberId: document.getElementById('phoneNumberId').value,
+                accessToken: document.getElementById('accessToken').value,
+                wabaId: document.getElementById('wabaId').value,
+                adminPhone: document.getElementById('adminPhone').value
+            };
+
+            statusDiv.classList.remove('hidden', 'text-green-600', 'text-red-600');
+            statusDiv.innerText = "Guardando...";
+            statusDiv.classList.add('block');
+
+            try {
+                const res = await fetch('/api/configuracion/whatsapp/guardar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    statusDiv.innerText = "Configuración guardada correctamente";
+                    statusDiv.classList.add('text-green-600');
+                    setTimeout(() => statusDiv.classList.add('hidden'), 3000);
+                    cargarConfig(); // Recargar para ver fecha actualizada
+                } else {
+                    const err = await res.text();
+                    statusDiv.innerText = "Error: " + err;
+                    statusDiv.classList.add('text-red-600');
+                }
+            } catch (err) {
+                statusDiv.innerText = "Error de conexión";
+                statusDiv.classList.add('text-red-600');
+            }
+        };
+
+        document.getElementById('btnTest').onclick = async () => {
+            const telefono = document.getElementById('testPhone').value;
+            if (!telefono) {
+                alert("Por favor ingresa un número de teléfono.");
+                return;
+            }
+
+            statusDiv.classList.remove('hidden', 'text-green-600', 'text-red-600');
+            statusDiv.innerText = "Enviando mensaje de prueba...";
+            statusDiv.classList.add('block');
+
+            try {
+                const res = await fetch('/api/configuracion/whatsapp/test-mensaje', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ telefono })
+                });
+
+                if (res.ok) {
+                    statusDiv.innerText = "¡Mensaje enviado con éxito!";
+                    statusDiv.classList.add('text-green-600');
+                } else {
+                    const err = await res.json();
+                    statusDiv.innerText = "Error: " + (err.mensaje || "No se pudo enviar");
+                    statusDiv.classList.add('text-red-600');
+                }
+            } catch (err) {
+                statusDiv.innerText = "Error de conexión al servidor";
+                statusDiv.classList.add('text-red-600');
+            }
+        };
+        
+        document.getElementById('btnDebug').onclick = async () => {
+            const debugDiv = document.getElementById('debugResult');
+            debugDiv.classList.remove('hidden');
+            debugDiv.innerText = "Realizando pruebas de conexión y consultando a Meta API...";
+
+            try {
+                const res = await fetch('/api/configuracion/whatsapp/debug');
+                if (res.ok) {
+                    const data = await res.json();
+                    debugDiv.innerText = JSON.stringify(data, null, 2);
+                } else {
+                    const err = await res.text();
+                    debugDiv.innerText = "Error: " + err;
+                }
+            } catch (err) {
+                debugDiv.innerText = "Error de conexión al realizar diagnóstico";
+            }
+        };
+
+        cargarConfig();
+    </script>
+</body>
+</html>

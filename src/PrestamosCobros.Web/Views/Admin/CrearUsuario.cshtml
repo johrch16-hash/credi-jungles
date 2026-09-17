@@ -1,0 +1,220 @@
+@model PrestamosCobros.BLL.DTOs.UsuarioCreateDto
+@{
+    ViewData["Title"] = "Registrar Nuevo Personal";
+}
+
+<div class="max-w-2xl mx-auto pt-8">
+    <div class="mb-10">
+        <h2 class="text-3xl font-black text-primary-container tracking-tighter">Nuevo Personal</h2>
+        <p class="text-sm font-medium text-secondary opacity-60">Configura un nuevo perfil para tu equipo administrativo.</p>
+    </div>
+
+    <div class="bg-surface rounded-[40px] soft-raised p-6 sm:p-10 border border-white/50">
+        <form asp-action="CrearUsuario" method="post" class="space-y-8">
+            <div asp-validation-summary="ModelOnly" class="text-rose-500 text-xs font-bold mb-4"></div>
+
+            <div class="space-y-2">
+                <label class="text-xs font-black text-primary-container uppercase tracking-widest ml-1">Nombre Completo</label>
+                <input asp-for="NombreCompleto" class="w-full bg-surface border-none rounded-2xl soft-recessed px-6 py-4 focus:ring-2 focus:ring-primary-container/10 text-primary-container font-bold" placeholder="Ej. Juan Pérez" />
+                <span asp-validation-for="NombreCompleto" class="text-rose-500 text-[10px] font-bold"></span>
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-xs font-black text-primary-container uppercase tracking-widest ml-1">Correo Electrónico</label>
+                <input asp-for="Email" class="w-full bg-surface border-none rounded-2xl soft-recessed px-6 py-4 focus:ring-2 focus:ring-primary-container/10 text-primary-container font-bold" placeholder="correo@ejemplo.com" />
+                <span asp-validation-for="Email" class="text-rose-500 text-[10px] font-bold"></span>
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-xs font-black text-primary-container uppercase tracking-widest ml-1">Número de Teléfono</label>
+                <input asp-for="Telefono" class="w-full bg-surface border-none rounded-2xl soft-recessed px-6 py-4 focus:ring-2 focus:ring-primary-container/10 text-primary-container font-bold" placeholder="Ej. +506 8888-8888" />
+                <span asp-validation-for="Telefono" class="text-rose-500 text-[10px] font-bold"></span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-2">
+                    <label class="text-xs font-black text-primary-container uppercase tracking-widest ml-1">Rol de Acceso</label>
+                    <div class="relative">
+                        <select asp-for="Rol" class="w-full bg-surface border-none rounded-2xl soft-recessed px-6 py-4 focus:ring-2 focus:ring-primary-container/10 text-primary-container font-bold appearance-none">
+                            <option value="Admin">Administrador</option>
+                            <option value="Asistente">Asistente</option>
+                            <option value="Cobrador">Cobrador</option>
+                        </select>
+                        <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary opacity-40">expand_more</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs font-black text-primary-container uppercase tracking-widest ml-1">Contraseña Temporal</label>
+                    <div class="relative">
+                        <input asp-for="Password" type="password" id="passwordField" class="w-full bg-surface border-none rounded-2xl soft-recessed px-6 py-4 pr-12 focus:ring-2 focus:ring-primary-container/10 text-primary-container font-bold" />
+                        <button type="button" onclick="togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 text-secondary opacity-40 hover:opacity-70 transition-opacity">
+                            <span class="material-symbols-outlined text-xl" id="passwordIcon">visibility_off</span>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Password" class="text-rose-500 text-[10px] font-bold"></span>
+                </div>
+            </div>
+
+            <!-- ═══ PERMISOS DEL SISTEMA ═══ -->
+            <div class="pt-4 border-t border-primary-container/5">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-sm font-black text-primary-container uppercase tracking-widest">Permisos del Sistema</h3>
+                        <p class="text-[10px] font-medium text-secondary opacity-50 mt-1">Activa o desactiva módulos específicos para este usuario.</p>
+                    </div>
+                    <button type="button" id="toggleAllBtn" onclick="toggleAllPermisos()" class="text-[10px] font-black text-primary-container uppercase tracking-widest bg-surface soft-raised-sm px-4 py-2 rounded-xl hover:soft-recessed-sm transition-all">
+                        Seleccionar Todos
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Gestión de Clientes -->
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Gestión de Clientes</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirGestionClientes" class="permiso-check" id="PermitirGestionClientes">
+                            <label for="PermitirGestionClientes"></label>
+                        </div>
+                    </div>
+
+                    <!-- Gestión de Préstamos -->
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Gestión de Préstamos</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirGestionPrestamos" class="permiso-check" id="PermitirGestionPrestamos">
+                            <label for="PermitirGestionPrestamos"></label>
+                        </div>
+                    </div>
+
+                    <!-- Registro de Gastos -->
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Registro de Gastos</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirRegistroGastos" class="permiso-check" id="PermitirRegistroGastos">
+                            <label for="PermitirRegistroGastos"></label>
+                        </div>
+                    </div>
+
+                    <!-- Registro de Pagos -->
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Registro de Pagos</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirRegistroPagos" class="permiso-check" id="PermitirRegistroPagos">
+                            <label for="PermitirRegistroPagos"></label>
+                        </div>
+                    </div>
+
+                    <!-- Enviar Recordatorios / Comprobantes -->
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Enviar Recordatorios / Comprobantes</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirEnviarNotificaciones" class="permiso-check" id="PermitirEnviarNotificaciones">
+                            <label for="PermitirEnviarNotificaciones"></label>
+                        </div>
+                    </div>
+
+                    <!-- Ver Reportes -->
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Ver Reportes</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirVerReportes" class="permiso-check" id="PermitirVerReportes">
+                            <label for="PermitirVerReportes"></label>
+                        </div>
+                    </div>
+
+                    <!-- Ver Auditoría -->
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Ver Auditoría</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirVerAuditoria" class="permiso-check" id="PermitirVerAuditoria">
+                            <label for="PermitirVerAuditoria"></label>
+                        </div>
+                    </div>
+
+                    <!-- Gestión de Personal -->
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Gestión de Personal</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirGestionPersonal" class="permiso-check" id="PermitirGestionPersonal">
+                            <label for="PermitirGestionPersonal"></label>
+                        </div>
+                    </div>
+
+                    <!-- Configurar WhatsApp -->
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Configurar WhatsApp API</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirConfigWhatsApp" class="permiso-check" id="PermitirConfigWhatsApp">
+                            <label for="PermitirConfigWhatsApp"></label>
+                        </div>
+                    </div>
+
+                    <!-- Configurar Correo -->
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Configurar Correo SMTP</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirConfigCorreo" class="permiso-check" id="PermitirConfigCorreo">
+                            <label for="PermitirConfigCorreo"></label>
+                        </div>
+                    </div>
+
+                    <!-- Papelera de Reciclaje -->
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Papelera de Reciclaje</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirPapelera" class="permiso-check" id="PermitirPapelera">
+                            <label for="PermitirPapelera"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-6 flex flex-col-reverse sm:flex-row gap-4">
+                <a href="@Url.Action("Personal", "Admin")" class="flex-1 text-center py-4 rounded-2xl font-black text-xs text-secondary opacity-60 hover:opacity-100 transition-opacity uppercase tracking-widest">
+                    Cancelar
+                </a>
+                <button type="submit" class="flex-1 bg-primary-container text-white py-4 rounded-2xl font-black text-xs soft-raised hover:soft-recessed transition-all uppercase tracking-widest">
+                    Crear Cuenta
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function togglePassword() {
+            const field = document.getElementById('passwordField');
+            const icon = document.getElementById('passwordIcon');
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.textContent = 'visibility';
+            } else {
+                field.type = 'password';
+                icon.textContent = 'visibility_off';
+            }
+        }
+
+        function toggleAllPermisos() {
+            const checks = document.querySelectorAll('.permiso-check');
+            const allChecked = [...checks].every(c => c.checked);
+            const btn = document.getElementById('toggleAllBtn');
+
+            checks.forEach(c => {
+                c.checked = !allChecked;
+            });
+
+            btn.textContent = allChecked ? 'Seleccionar Todos' : 'Deseleccionar Todos';
+        }
+
+        // Update button text on individual toggle
+        document.querySelectorAll('.permiso-check').forEach(c => {
+            c.addEventListener('change', () => {
+                const checks = document.querySelectorAll('.permiso-check');
+                const allChecked = [...checks].every(ch => ch.checked);
+                document.getElementById('toggleAllBtn').textContent = allChecked ? 'Deseleccionar Todos' : 'Seleccionar Todos';
+            });
+        });
+    </script>
+}

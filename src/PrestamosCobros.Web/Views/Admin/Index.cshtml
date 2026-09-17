@@ -1,0 +1,102 @@
+@{
+    ViewData["Title"] = "Panel Administrativo";
+}
+<div class="space-y-10 pb-12 px-4">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-5">
+        <div class="w-12 h-12 md:w-16 md:h-16 bg-primary-container text-white rounded-[18px] md:rounded-[24px] flex items-center justify-center soft-raised-sm shrink-0">
+            <span class="material-symbols-outlined text-3xl md:text-4xl">admin_panel_settings</span>
+        </div>
+        <div>
+            <h2 class="text-3xl md:text-5xl font-black text-primary-container tracking-tighter leading-tight break-words">Panel Administrativo</h2>
+            <p class="text-[10px] md:text-sm font-black text-secondary uppercase tracking-widest opacity-40 mt-1 md:mt-0">Gestión de Seguridad, Reportes y Conexiones</p>
+        </div>
+    </div>
+
+    <div class="flex justify-start md:justify-end mt-2 md:-mb-4">
+        <a href="@Url.Action("Configuracion", "Notificaciones")" class="soft-button soft-button-primary !py-3 !px-6 text-[10px] md:text-xs font-black uppercase tracking-widest flex items-center gap-2 shadow-md w-full md:w-auto text-center justify-center">
+            <span class="material-symbols-outlined text-base">settings_suggest</span>
+            <span>Ajustes de Automatización</span>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Dashboard Financiero -->
+        <a href="@Url.Action("Dashboard", "Admin")" class="group bg-surface rounded-[32px] p-8 soft-recessed-sm hover:soft-raised-sm transition-all border border-transparent hover:border-primary-container/10">
+            <div class="w-14 h-14 bg-purple-50 text-purple-600 rounded-[22px] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-3xl">insights</span>
+            </div>
+            <h4 class="text-base font-black text-primary-container mb-2">Dashboard Financiero</h4>
+            <p class="text-xs font-medium text-secondary opacity-60 leading-relaxed">Reportes y estadísticas visuales de rendimiento y KPIs del negocio.</p>
+        </a>
+
+        <!-- Gestión de Pagarés -->
+        <a href="@Url.Action("Crear", "Pagares")" class="group bg-surface rounded-[32px] p-8 soft-recessed-sm hover:soft-raised-sm transition-all border border-transparent hover:border-primary-container/10">
+            <div class="w-14 h-14 bg-teal-50 text-teal-600 rounded-[22px] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-3xl">contract</span>
+            </div>
+            <h4 class="text-base font-black text-primary-container mb-2">Gestión de Pagarés</h4>
+            <p class="text-xs font-medium text-secondary opacity-60 leading-relaxed">Generación legal de pagarés personalizados en formato PDF.</p>
+        </a>
+
+        <!-- Reporte General -->
+        <a href="@Url.Action("Index", "Reportes")" class="group bg-surface rounded-[32px] p-8 soft-recessed-sm hover:soft-raised-sm transition-all border border-transparent hover:border-primary-container/10">
+            <div class="w-14 h-14 bg-rose-50 text-rose-600 rounded-[22px] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-3xl">description</span>
+            </div>
+            <h4 class="text-base font-black text-primary-container mb-2">Estados de Cuenta</h4>
+            <p class="text-xs font-medium text-secondary opacity-60 leading-relaxed">Generador profesional de reportes detallados por cliente o generales.</p>
+        </a>
+
+        <!-- Usuarios -->
+        <a href="@Url.Action("Personal", "Admin")" class="group bg-surface rounded-[32px] p-8 soft-recessed-sm hover:soft-raised-sm transition-all border border-transparent hover:border-primary-container/10">
+            <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-[22px] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-3xl">badge</span>
+            </div>
+            <h4 class="text-base font-black text-primary-container mb-2">Gestión de Personal</h4>
+            <p class="text-xs font-medium text-secondary opacity-60 leading-relaxed">Administrar asistentes, cobradores y sus privilegios de acceso.</p>
+        </a>
+
+        <!-- Auditoría -->
+        <a href="@Url.Action("Auditoria", "Admin")" class="group bg-surface rounded-[32px] p-8 soft-recessed-sm hover:soft-raised-sm transition-all border border-transparent hover:border-primary-container/10">
+            <div class="w-14 h-14 bg-amber-50 text-amber-600 rounded-[22px] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-3xl">history</span>
+            </div>
+            <h4 class="text-base font-black text-primary-container mb-2">Auditoría</h4>
+            <p class="text-xs font-medium text-secondary opacity-60 leading-relaxed">Monitoreo de actividad y línea de tiempo de operaciones del sistema.</p>
+        </a>
+
+        @if (User.IsInRole("Master"))
+        {
+            <!-- Configurar WhatsApp -->
+            <a href="/configuracion_whatsapp.html" class="group bg-surface rounded-[32px] p-8 soft-recessed-sm hover:soft-raised-sm transition-all border border-transparent hover:border-primary-container/10">
+                <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-[22px] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <span class="material-symbols-outlined text-3xl">chat</span>
+                </div>
+                <h4 class="text-base font-black text-primary-container mb-2">WhatsApp API</h4>
+                <p class="text-xs font-medium text-secondary opacity-60 leading-relaxed">Configurar tokens de WhatsApp Cloud API y número emisor.</p>
+            </a>
+
+            <!-- Configurar Correo -->
+            <a href="/configuracion_email.html" class="group bg-surface rounded-[32px] p-8 soft-recessed-sm hover:soft-raised-sm transition-all border border-transparent hover:border-primary-container/10">
+                <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-[22px] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <span class="material-symbols-outlined text-3xl">mail</span>
+                </div>
+                <h4 class="text-base font-black text-primary-container mb-2">Correo SMTP</h4>
+                <p class="text-xs font-medium text-secondary opacity-60 leading-relaxed">Configurar servidor de correo saliente SMTP, usuario y clave.</p>
+            </a>
+        }
+
+        @if (User.IsInRole("Master"))
+        {
+            <!-- Limpiar Base de Datos -->
+            <a href="@Url.Action("LimpiarBaseDatos", "Admin")" class="group bg-surface rounded-[32px] p-8 soft-recessed-sm hover:soft-raised-sm transition-all border border-transparent hover:border-red-500/30">
+                <div class="w-14 h-14 bg-red-50 text-red-600 rounded-[22px] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <span class="material-symbols-outlined text-3xl">delete_forever</span>
+                </div>
+                <h4 class="text-base font-black text-red-600 mb-2">Purgar Base de Datos</h4>
+                <p class="text-xs font-medium text-secondary opacity-60 leading-relaxed">Zona Peligrosa: Elimina todos los clientes, operaciones y alertas permanentemente.</p>
+            </a>
+        }
+    </div>
+</div>

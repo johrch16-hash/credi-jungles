@@ -1,0 +1,249 @@
+@model PrestamosCobros.BLL.DTOs.DashboardDto
+
+<!-- Desktop Dashboard Container -->
+<div class="hidden lg:block space-y-10 pb-16 px-2">
+    <!-- Welcome Banner - Premium Tactile Layer -->
+    <section class="relative overflow-hidden rounded-[40px] bg-gradient-to-br from-[#241710] via-[#1A1009] to-[#0F0906] p-12 text-white soft-raised shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-[#D4AF37]/30">
+        <div class="relative z-10 space-y-6">
+            <div class="inline-flex items-center gap-2.5 px-4 py-2 bg-[#1B4332]/80 rounded-full border border-[#52B788]/40 backdrop-blur-md">
+                <span class="w-2.5 h-2.5 bg-[#52B788] rounded-full animate-pulse"></span>
+                <span class="text-[10px] font-black uppercase tracking-[0.25em] text-[#52B788]">Credi Jungles</span>
+            </div>
+            <div>
+                <h2 class="text-5xl font-black mb-3 tracking-tighter leading-none">Hola, <span class="gold-gradient-text">@(User.Identity?.Name?.Split('@')[0] ?? "Gestor")</span></h2>
+                <p class="text-lg text-[#C8B89E] font-medium tracking-tight max-w-md">La cartera actualmente gestiona <span class="text-[#F4E5B0] font-black">@Model.PrestamosActivos préstamos</span> activos con flujo de caja saludable.</p>
+            </div>
+        </div>
+        <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-[#D4AF37]/10 rounded-full blur-3xl"></div>
+        <div class="absolute right-10 top-10 w-32 h-32 bg-[#2D6A4F]/15 rounded-full blur-2xl"></div>
+    </section>
+
+    <!-- Metrics Bento Grid -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Metric: Total Capital -->
+        <div class="soft-card !p-8 flex flex-col justify-between min-h-[220px] group transition-all">
+            <div class="w-14 h-14 flex items-center justify-center bg-gradient-to-br from-[#F4E5B0] via-[#D4AF37] to-[#8C6239] text-[#160E09] rounded-[22px] shadow-lg group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-3xl font-black">account_balance_wallet</span>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[#C8B89E] text-[11px] uppercase font-black tracking-[0.2em]">Capital Prestado</p>
+                <p class="text-4xl font-black text-white tracking-tighter">₡@Model.TotalPrestado.ToString("N0")</p>
+            </div>
+        </div>
+
+        <!-- Metric: Recuperación -->
+        <div class="soft-card !p-8 flex flex-col justify-between min-h-[220px] group transition-all">
+            <div class="flex justify-between items-start">
+                <div class="w-14 h-14 flex items-center justify-center bg-gradient-to-br from-[#2D6A4F] to-[#1B4332] text-[#52B788] border border-[#52B788]/40 rounded-[22px] shadow-lg group-hover:scale-110 transition-transform">
+                    <span class="material-symbols-outlined text-3xl font-black">payments</span>
+                </div>
+                <div class="soft-badge bg-[#1B4332]/80 text-[#52B788] border border-[#52B788]/40 font-black text-[9px] uppercase tracking-widest">COBRADO</div>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[#C8B89E] text-[11px] uppercase font-black tracking-[0.2em]">Total Recuperado</p>
+                <p class="text-4xl font-black text-[#52B788] tracking-tighter">₡@Model.TotalCobrado.ToString("N0")</p>
+            </div>
+        </div>
+
+        <!-- Metric: Saldo -->
+        <div class="soft-card !p-8 flex flex-col justify-between min-h-[220px] group transition-all">
+            <div class="w-14 h-14 flex items-center justify-center bg-gradient-to-br from-[#9A3412] to-[#451A03] text-[#FDBA74] border border-[#F97316]/40 rounded-[22px] shadow-lg group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-3xl font-black">hourglass_empty</span>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[#C8B89E] text-[11px] uppercase font-black tracking-[0.2em]">Saldo en Calle</p>
+                <p class="text-4xl font-black text-[#FB7185] tracking-tighter">₡@Model.SaldoPendiente.ToString("N0")</p>
+            </div>
+        </div>
+
+        <!-- Metric: Utilidad Bruta -->
+        <div class="soft-card !p-8 flex flex-col justify-between min-h-[220px] group transition-all">
+            <div class="w-14 h-14 flex items-center justify-center bg-gradient-to-br from-[#4338CA] to-[#1E1B4B] text-[#A5B4FC] border border-[#6366F1]/40 rounded-[22px] shadow-lg group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-3xl font-black">insights</span>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[#C8B89E] text-[11px] uppercase font-black tracking-[0.2em]">Utilidad Bruta</p>
+                <p class="text-4xl font-black text-[#A5B4FC] tracking-tighter">₡@Model.GananciaNetaEstimada.ToString("N0")</p>
+            </div>
+        </div>
+
+        <!-- Metric: Gastos -->
+        <div class="soft-card !p-8 flex flex-col justify-between min-h-[220px] group transition-all">
+            <div class="w-14 h-14 flex items-center justify-center bg-gradient-to-br from-[#9F1239] to-[#4C0519] text-[#FDA4AF] border border-[#F43F5E]/40 rounded-[22px] shadow-lg group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-3xl font-black">receipt_long</span>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[#C8B89E] text-[11px] uppercase font-black tracking-[0.2em]">Gastos</p>
+                <p class="text-4xl font-black text-[#FDA4AF] tracking-tighter">₡@Model.TotalGastos.ToString("N0")</p>
+            </div>
+        </div>
+
+        <!-- Metric: Neta -->
+        <div class="soft-card !p-8 flex flex-col justify-between min-h-[220px] group transition-all">
+            <div class="w-14 h-14 flex items-center justify-center bg-gradient-to-br from-[#F4E5B0] via-[#D4AF37] to-[#8C6239] text-[#160E09] rounded-[22px] shadow-lg group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-3xl font-black">account_balance</span>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[#C8B89E] text-[11px] uppercase font-black tracking-[0.2em]">Utilidad Neta</p>
+                <p class="text-4xl font-black gold-gradient-text tracking-tighter">₡@((Model.GananciaNetaEstimada - Model.TotalGastos).ToString("N0"))</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tactical Actions -->
+    <section class="soft-card !p-10">
+        <div class="flex items-center justify-between mb-10">
+            <h3 class="text-2xl font-black text-white tracking-tighter">Operaciones Rápidas</h3>
+            <span class="material-symbols-outlined text-[#D4AF37]/40 text-4xl">bolt</span>
+        </div>
+        <div class="grid grid-cols-3 gap-8">
+            <a href="@Url.Action("Crear", "Prestamos")" class="flex flex-col items-center gap-4 group">
+                <div class="w-20 h-20 flex items-center justify-center rounded-[28px] bg-[#1E130B] border border-[#D4AF37]/30 text-[#F4E5B0] shadow-lg group-hover:scale-105 group-hover:border-[#D4AF37] group-hover:shadow-[0_0_25px_rgba(212,175,55,0.3)] transition-all">
+                    <span class="material-symbols-outlined text-3xl group-hover:scale-110 transition-transform text-[#D4AF37]">add_card</span>
+                </div>
+                <span class="text-[11px] font-black text-[#C8B89E] uppercase tracking-[0.2em] group-hover:text-[#F4E5B0] transition-colors">Nuevo Préstamo</span>
+            </a>
+            <a href="@Url.Action("Crear", "Clientes")" class="flex flex-col items-center gap-4 group">
+                <div class="w-20 h-20 flex items-center justify-center rounded-[28px] bg-[#1E130B] border border-[#D4AF37]/30 text-[#F4E5B0] shadow-lg group-hover:scale-105 group-hover:border-[#D4AF37] group-hover:shadow-[0_0_25px_rgba(212,175,55,0.3)] transition-all">
+                    <span class="material-symbols-outlined text-3xl group-hover:scale-110 transition-transform text-[#D4AF37]">person_add</span>
+                </div>
+                <span class="text-[11px] font-black text-[#C8B89E] uppercase tracking-[0.2em] group-hover:text-[#F4E5B0] transition-colors">Registrar cliente</span>
+            </a>
+            <a href="@Url.Action("Index", "Gastos")" class="flex flex-col items-center gap-4 group">
+                <div class="w-20 h-20 flex items-center justify-center rounded-[28px] bg-[#1E130B] border border-[#D4AF37]/30 text-[#F4E5B0] shadow-lg group-hover:scale-105 group-hover:border-[#D4AF37] group-hover:shadow-[0_0_25px_rgba(212,175,55,0.3)] transition-all">
+                    <span class="material-symbols-outlined text-3xl group-hover:scale-110 transition-transform text-[#D4AF37]">receipt_long</span>
+                </div>
+                <span class="text-[11px] font-black text-[#C8B89E] uppercase tracking-[0.2em] group-hover:text-[#F4E5B0] transition-colors">Registrar Gasto</span>
+            </a>
+        </div>
+    </section>
+</div>
+
+<!-- Mobile Dashboard Container -->
+<div class="lg:hidden space-y-6 py-4 px-2">
+    <!-- Welcome Hero -->
+    <section class="relative overflow-hidden rounded-[36px] bg-gradient-to-br from-[#241710] via-[#1A1009] to-[#0F0906] p-7 text-white shadow-[0_12px_36px_rgba(0,0,0,0.7)] border border-[#D4AF37]/30">
+        <div class="relative z-10 space-y-4">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-[#1B4332]/80 rounded-full border border-[#52B788]/40 backdrop-blur-md">
+                <span class="w-2 h-2 bg-[#52B788] rounded-full animate-pulse"></span>
+                <span class="text-[8px] font-black uppercase tracking-[0.2em] text-[#52B788]">Credi Jungles</span>
+            </div>
+            <div>
+                <h2 class="text-3xl font-black mb-1.5 tracking-tighter leading-none">Hola, <span class="gold-gradient-text">@(User.Identity?.Name?.Split('@')[0] ?? "admin")</span></h2>
+                <p class="text-xs text-[#C8B89E] font-medium tracking-tight">La cartera actualmente gestiona <span class="text-[#F4E5B0] font-black">@Model.PrestamosActivos préstamos</span> activos con flujo de caja saludable.</p>
+            </div>
+        </div>
+        <div class="absolute -right-16 -bottom-16 w-52 h-52 bg-[#D4AF37]/10 rounded-full blur-2xl"></div>
+        <div class="absolute right-6 top-6 w-20 h-20 bg-[#2D6A4F]/15 rounded-full blur-xl"></div>
+    </section>
+
+    <!-- Bento Grid (6 cards) -->
+    <div class="grid grid-cols-2 gap-4">
+        <!-- TOTAL PRESTADO -->
+        <div class="soft-card !p-5 flex flex-col justify-between min-h-[160px] relative">
+            <div class="flex justify-between items-start">
+                <div class="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-[#F4E5B0] to-[#D4AF37] text-[#160E09] rounded-full shadow-sm">
+                    <span class="material-symbols-outlined text-lg font-black">account_balance_wallet</span>
+                </div>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[9px] font-black text-[#C8B89E] uppercase tracking-[0.15em]">Capital Prestado</p>
+                <p class="text-xl font-black text-white tracking-tight">₡@Model.TotalPrestado.ToString("N0")</p>
+            </div>
+        </div>
+
+        <!-- RECUPERADO -->
+        <div class="soft-card !p-5 flex flex-col justify-between min-h-[160px] relative">
+            <div class="flex justify-between items-center w-full">
+                <div class="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-[#2D6A4F] to-[#1B4332] text-[#52B788] border border-[#52B788]/40 rounded-full shadow-sm">
+                    <span class="material-symbols-outlined text-lg font-black">payments</span>
+                </div>
+                <span class="text-[8px] font-black text-[#52B788] bg-[#1B4332]/80 border border-[#52B788]/40 px-2 py-0.5 rounded-full uppercase tracking-wider scale-90">COBRADO</span>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[9px] font-black text-[#C8B89E] uppercase tracking-[0.15em]">Total Recuperado</p>
+                <p class="text-xl font-black text-[#52B788] tracking-tight">₡@Model.TotalCobrado.ToString("N0")</p>
+            </div>
+        </div>
+
+        <!-- PENDIENTE -->
+        <div class="soft-card !p-5 flex flex-col justify-between min-h-[160px] relative">
+            <div class="flex justify-between items-start">
+                <div class="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-[#9A3412] to-[#451A03] text-[#FDBA74] border border-[#F97316]/40 rounded-full shadow-sm">
+                    <span class="material-symbols-outlined text-lg font-black">hourglass_empty</span>
+                </div>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[9px] font-black text-[#C8B89E] uppercase tracking-[0.15em]">Saldo en Calle</p>
+                <p class="text-xl font-black text-[#FB7185] tracking-tight">₡@Model.SaldoPendiente.ToString("N0")</p>
+            </div>
+        </div>
+
+        <!-- GANANCIAS -->
+        <div class="soft-card !p-5 flex flex-col justify-between min-h-[160px] relative">
+            <div class="flex justify-between items-start">
+                <div class="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-[#4338CA] to-[#1E1B4B] text-[#A5B4FC] border border-[#6366F1]/40 rounded-full shadow-sm">
+                    <span class="material-symbols-outlined text-lg font-black">insights</span>
+                </div>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[9px] font-black text-[#C8B89E] uppercase tracking-[0.15em]">Utilidad Bruta</p>
+                <p class="text-xl font-black text-[#A5B4FC] tracking-tight">₡@Model.GananciaNetaEstimada.ToString("N0")</p>
+            </div>
+        </div>
+
+        <!-- GASTOS -->
+        <div class="soft-card !p-5 flex flex-col justify-between min-h-[160px] relative">
+            <div class="flex justify-between items-start">
+                <div class="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-[#9F1239] to-[#4C0519] text-[#FDA4AF] border border-[#F43F5E]/40 rounded-full shadow-sm">
+                    <span class="material-symbols-outlined text-lg font-black">receipt_long</span>
+                </div>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[9px] font-black text-[#C8B89E] uppercase tracking-[0.15em]">Gastos</p>
+                <p class="text-xl font-black text-[#FDA4AF] tracking-tight">₡@Model.TotalGastos.ToString("N0")</p>
+            </div>
+        </div>
+
+        <!-- NETA -->
+        <div class="soft-card !p-5 flex flex-col justify-between min-h-[160px] relative">
+            <div class="flex justify-between items-start">
+                <div class="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-[#F4E5B0] to-[#D4AF37] text-[#160E09] rounded-full shadow-sm">
+                    <span class="material-symbols-outlined text-lg font-black">account_balance</span>
+                </div>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[9px] font-black text-[#C8B89E] uppercase tracking-[0.15em]">Utilidad Neta</p>
+                <p class="text-xl font-black gold-gradient-text tracking-tight">₡@((Model.GananciaNetaEstimada - Model.TotalGastos).ToString("N0"))</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="soft-card !p-6 space-y-5">
+        <div class="flex items-center justify-between">
+            <h3 class="text-sm font-black text-white uppercase tracking-wider">Operaciones Rápidas</h3>
+            <span class="material-symbols-outlined text-[#D4AF37]/50 text-xl">bolt</span>
+        </div>
+        <div class="grid grid-cols-3 gap-4">
+            <a href="@Url.Action("Crear", "Prestamos")" class="flex flex-col items-center gap-3 group">
+                <div class="w-14 h-14 flex items-center justify-center rounded-[20px] bg-[#1E130B] border border-[#D4AF37]/30 shadow-md group-hover:scale-105 active:scale-95 transition-all text-[#D4AF37]">
+                    <span class="material-symbols-outlined text-xl">add_card</span>
+                </div>
+                <span class="text-[8px] font-black text-[#C8B89E] uppercase tracking-[0.15em] text-center">Nuevo Préstamo</span>
+            </a>
+            <a href="@Url.Action("Crear", "Clientes")" class="flex flex-col items-center gap-3 group">
+                <div class="w-14 h-14 flex items-center justify-center rounded-[20px] bg-[#1E130B] border border-[#D4AF37]/30 shadow-md group-hover:scale-105 active:scale-95 transition-all text-[#D4AF37]">
+                    <span class="material-symbols-outlined text-xl">person_add</span>
+                </div>
+                <span class="text-[8px] font-black text-[#C8B89E] uppercase tracking-[0.15em] text-center">Registrar cliente</span>
+            </a>
+            <a href="@Url.Action("Index", "Gastos")" class="flex flex-col items-center gap-3 group">
+                <div class="w-14 h-14 flex items-center justify-center rounded-[20px] bg-[#1E130B] border border-[#D4AF37]/30 shadow-md group-hover:scale-105 active:scale-95 transition-all text-[#D4AF37]">
+                    <span class="material-symbols-outlined text-xl">receipt_long</span>
+                </div>
+                <span class="text-[8px] font-black text-[#C8B89E] uppercase tracking-[0.15em] text-center">Registrar Gasto</span>
+            </a>
+        </div>
+    </div>
+</div>

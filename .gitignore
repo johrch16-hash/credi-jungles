@@ -1,0 +1,35 @@
+# .NET
+bin/
+obj/
+**/bin/
+**/obj/
+scratch/
+*.user
+*.suo
+*.cache
+*.db
+*.db-shm
+*.db-wal
+
+# Secrets
+.env
+appsettings.*.local.json
+*.pfx
+*.key
+*.crt
+
+# Build output
+/publicado/
+/publish/
+
+# IDE
+.vs/
+.idea/
+*.swp
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+testsprite_tests\tmp\config.json

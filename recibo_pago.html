@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .receipt-texture {
+            background-color: #ffffff;
+            background-image: radial-gradient(#f0f0f0 1px, transparent 0);
+            background-size: 20px 20px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e3e2e5",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed": "#e0e3e6",
+                        "on-tertiary-fixed-variant": "#6b3a25",
+                        "on-secondary-container": "#5f6366",
+                        "secondary-fixed-dim": "#c4c7ca",
+                        "surface-container-highest": "#e3e2e5",
+                        "secondary": "#5b5f62",
+                        "primary": "#000613",
+                        "outline-variant": "#c4c6cf",
+                        "on-primary-container": "#6f88ad",
+                        "surface-container-high": "#e9e7eb",
+                        "on-background": "#1a1c1e",
+                        "inverse-on-surface": "#f2f0f3",
+                        "on-tertiary-container": "#b5785f",
+                        "on-surface-variant": "#43474e",
+                        "inverse-primary": "#afc8f0",
+                        "tertiary-container": "#391303",
+                        "surface-container": "#efedf0",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed": "#351002",
+                        "on-surface": "#1a1c1e",
+                        "surface-bright": "#faf9fc",
+                        "inverse-surface": "#2f3033",
+                        "background": "#faf9fc",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#fdb69a",
+                        "surface-tint": "#476083",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#dbd9dd",
+                        "surface-container-low": "#f4f3f6",
+                        "primary-fixed-dim": "#afc8f0",
+                        "primary-container": "#001f3f",
+                        "error": "#ba1a1a",
+                        "outline": "#74777f",
+                        "on-secondary-fixed-variant": "#43474a",
+                        "secondary-container": "#dde0e3",
+                        "on-primary-fixed-variant": "#2f486a",
+                        "on-error-container": "#93000a",
+                        "tertiary": "#110200",
+                        "primary-fixed": "#d4e3ff",
+                        "surface": "#faf9fc",
+                        "on-secondary-fixed": "#181c1e",
+                        "on-primary-fixed": "#001c3a",
+                        "tertiary-fixed": "#ffdbce"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "element-padding-sm": "0.75rem",
+                        "element-padding-md": "1rem",
+                        "stack-gap": "1rem",
+                        "section-padding": "1.5rem",
+                        "container-margin": "1.25rem"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "data-display": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["22px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "data-display": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700"}],
+                        "headline-lg": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex flex-col items-center">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-on-background flex items-center justify-between px-container-margin w-full h-16 docked full-width top-0 shadow-sm z-10">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary dark:text-primary-fixed hover:bg-surface-container-high transition-colors active:scale-95 duration-150 p-2 rounded-full">arrow_back</button>
+<h1 class="font-headline-md text-headline-md text-primary dark:text-primary-fixed">Confirmación de Pago</h1>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high transition-colors active:scale-95 duration-150 p-2 rounded-full">more_vert</button>
+</header>
+<main class="w-full max-w-[600px] flex flex-col items-center px-container-margin py-section-padding gap-stack-gap mb-24">
+<!-- Ticket de Comprobante (Background Content) -->
+<div class="relative w-full flex flex-center flex-col items-center">
+<div class="w-[220px] bg-white shadow-lg p-6 flex flex-col font-mono text-[11px] leading-relaxed text-slate-800 border-t-8 border-primary relative overflow-hidden">
+<!-- Decorative zig-zag bottom simulated with shadows or SVG can be complex, using simple clean cut -->
+<div class="text-center mb-4">
+<div class="font-bold text-sm mb-1">LendSoft UI</div>
+<div>RECIBO DE PAGO</div>
+</div>
+<div class="whitespace-pre overflow-hidden">--------------------------------</div>
+<div class="flex flex-col gap-1 py-2">
+<div class="flex justify-between font-bold text-[13px]">
+<span>MONTO ABONADO:</span>
+<span>₡500.00</span>
+</div>
+<div class="flex justify-between text-slate-500">
+<span>SALDO PENDIENTE:</span>
+<span>₡2,400.00</span>
+</div>
+</div>
+<div class="whitespace-pre overflow-hidden">--------------------------------</div>
+<div class="flex flex-col gap-1 py-2">
+<div class="flex justify-between">
+<span>FECHA:</span>
+<span>12/10/2023</span>
+</div>
+<div class="flex justify-between">
+<span>HORA:</span>
+<span>14:25 PM</span>
+</div>
+<div class="flex justify-between">
+<span>REF:</span>
+<span>#PYMT-8842</span>
+</div>
+</div>
+<div class="whitespace-pre overflow-hidden">--------------------------------</div>
+<div class="text-center mt-4 opacity-60">
+                    Gracias por su pago
+                </div>
+<!-- Bottom cutout decoration -->
+<div class="absolute -bottom-1 left-0 w-full flex justify-between px-1">
+<div class="w-2 h-2 bg-background rounded-full"></div>
+<div class="w-2 h-2 bg-background rounded-full"></div>
+<div class="w-2 h-2 bg-background rounded-full"></div>
+<div class="w-2 h-2 bg-background rounded-full"></div>
+<div class="w-2 h-2 bg-background rounded-full"></div>
+<div class="w-2 h-2 bg-background rounded-full"></div>
+<div class="w-2 h-2 bg-background rounded-full"></div>
+<div class="w-2 h-2 bg-background rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Action Buttons Below Ticket -->
+<div class="w-full flex flex-col gap-4 mt-8">
+<button class="w-full flex items-center justify-center gap-3 py-4 bg-surface-container-highest text-primary font-bold rounded-xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] hover:bg-surface-container-high transition-all active:scale-95">
+<span class="material-symbols-outlined">download</span>
+<span>Descargar PDF</span>
+</button>
+<button class="w-full flex items-center justify-center gap-3 py-4 bg-[#E8F5E9] text-[#2E7D32] font-bold rounded-xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] hover:bg-[#C8E6C9] transition-all active:scale-95">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat</span>
+<span>Enviar por WhatsApp</span>
+</button>
+</div>
+</main>
+<!-- Modal: Registrar Pago (Active/Visible State) -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-container-margin">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-on-background/40 backdrop-blur-sm"></div>
+<!-- Modal Content -->
+<div class="relative w-full max-w-[400px] bg-white rounded-[1.5rem] shadow-2xl p-6 flex flex-col gap-6 animate-in fade-in zoom-in duration-300">
+<div class="flex flex-col items-center gap-2">
+<div class="w-12 h-1 bg-surface-variant rounded-full mb-2"></div>
+<h2 class="font-headline-md text-headline-md text-center">Registrar Pago</h2>
+<p class="text-on-surface-variant text-body-md text-center">Ingrese el monto del abono realizado hoy</p>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase px-2" for="amount">Monto del pago</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 text-headline-lg font-headline-lg text-primary">₡</span>
+<input class="w-full h-16 pl-10 pr-4 bg-surface-container-low border-none focus:ring-2 focus:ring-primary rounded-xl text-headline-lg font-headline-lg text-primary placeholder:text-outline-variant" id="amount" placeholder="0.00" type="number"/>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<button class="w-full h-14 bg-primary-container text-white font-bold rounded-xl flex items-center justify-center hover:opacity-90 active:scale-95 transition-all">
+                    Confirmar Pago
+                </button>
+<button class="w-full h-14 bg-white text-secondary font-semibold rounded-xl border border-outline-variant hover:bg-surface-container-low active:scale-95 transition-all">
+                    Cancelar
+                </button>
+</div>
+</div>
+</div>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-40 flex justify-around items-center py-2 px-2 bg-surface dark:bg-on-background docked full-width bottom-0 rounded-t-xl shadow-lg">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1.5 hover:bg-surface-container-low transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm mt-1">Inicio</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1.5 hover:bg-surface-container-low transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-label-sm text-label-sm mt-1">Préstamos</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-primary-container text-on-secondary-container dark:text-on-primary-container rounded-xl px-4 py-1.5 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+<span class="font-label-sm text-label-sm mt-1">Pagos</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1.5 hover:bg-surface-container-low transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm mt-1">Perfil</span>
+</a>
+</nav>
+</body></html>

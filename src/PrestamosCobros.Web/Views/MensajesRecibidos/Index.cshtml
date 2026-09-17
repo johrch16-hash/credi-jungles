@@ -1,0 +1,394 @@
+@model List<PrestamosCobros.Web.Controllers.ConversacionViewModel>
+@{
+    ViewData["Title"] = "Bandeja de Entrada - WhatsApp";
+}
+
+<div class="space-y-10 pb-12 px-4">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div class="flex items-center gap-5">
+            <div class="w-16 h-16 bg-primary-container text-white rounded-[24px] flex items-center justify-center soft-raised-sm">
+                <span class="material-symbols-outlined text-4xl">chat_bubble</span>
+            </div>
+            <div>
+                <h2 class="text-4xl font-black text-primary-container tracking-tighter">Bandeja de Entrada</h2>
+                <p class="text-secondary text-sm font-bold opacity-60">Respuestas y comprobantes de clientes recibidos por WhatsApp</p>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="soft-card flex flex-col items-center justify-center py-24 soft-recessed opacity-60">
+            <span class="material-symbols-outlined text-7xl mb-4 text-primary-container/40">forum</span>
+            <p class="text-xs font-black text-primary-container uppercase tracking-[0.2em]">Bandeja vacía</p>
+            <p class="text-[10px] text-secondary mt-1">Los mensajes entrantes de tus clientes se mostrarán aquí en tiempo real.</p>
+        </div>
+    }
+    else
+    {
+        <!-- Conversations List -->
+        <div class="space-y-4">
+            @foreach (var conv in Model)
+            {
+                var initials = "?";
+                var displayName = "Desconocido";
+                var phoneDisplay = conv.TelefonoRemitente ?? "";
+                if (phoneDisplay.Length > 8) {
+                    phoneDisplay = phoneDisplay[^8..];
+                    phoneDisplay = phoneDisplay.Substring(0, 4) + "-" + phoneDisplay.Substring(4);
+                }
+
+                if (!string.IsNullOrEmpty(conv.NombreCliente))
+                {
+                    displayName = conv.NombreCliente;
+                    var parts = conv.NombreCliente.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length > 0)
+                    {
+                        initials = parts.Length >= 2 
+                            ? $"{parts[0][0]}{parts[1][0]}".ToUpper()
+                            : parts[0][0].ToString().ToUpper();
+                    }
+                }
+
+                var lastMsg = conv.Mensajes.Last();
+                var lastMsgPreview = "";
+                if (lastMsg.TipoMensaje == "text" || lastMsg.TipoMensaje == "sent_text") 
+                {
+                    var contenido = lastMsg.Contenido ?? "";
+                    lastMsgPreview = contenido.Length > 40 ? contenido.Substring(0, 40) + "..." : contenido;
+                }
+                else 
+                {
+                    lastMsgPreview = lastMsg.TipoMensaje == "image" ? "📷 Imagen" : "📄 Documento";
+                }
+                
+                if (lastMsg.TipoMensaje == "sent_text") lastMsgPreview = "Tú: " + lastMsgPreview;
+
+                var safePhone = (conv.TelefonoRemitente ?? "").Replace("+", "");
+
+                <!-- Conversation Accordion -->
+                <div class="soft-card overflow-hidden transition-all @(conv.NoLeidos > 0 ? "border-l-4 border-primary-container" : "bg-white/60")" id="conv-@safePhone">
+                    <!-- Conversation Header (clickable) -->
+                    <div class="flex items-center gap-4 p-5 cursor-pointer hover:bg-surface/50 transition-colors" onclick="toggleConv('@safePhone')">
+                        <!-- Avatar -->
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center font-black text-sm shrink-0
+                            @(conv.ClienteId != null ? "bg-primary-container/10 text-primary-container" : "bg-gray-100 text-gray-400")">
+                            @initials
+                        </div>
+
+                        <!-- Name & Preview -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                @if (conv.ClienteId != null)
+                                {
+                                    <a href="@Url.Action("Detalle", "Clientes", new { id = conv.ClienteId })" class="text-sm font-black text-primary-container hover:underline truncate" onclick="event.stopPropagation()">
+                                        @displayName
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-sm font-black text-secondary truncate">@phoneDisplay</span>
+                                }
+                                <span class="text-[10px] font-bold text-secondary/60 bg-surface px-2 py-0.5 rounded-full shrink-0">+@conv.TelefonoRemitente</span>
+                            </div>
+                            <p class="text-xs text-secondary/60 truncate mt-0.5">@lastMsgPreview</p>
+                        </div>
+
+                        <!-- Badge & Date -->
+                        <div class="flex flex-col items-end gap-1.5 shrink-0">
+                            <span class="text-[10px] font-bold text-secondary/50">@conv.UltimoMensaje.ToLocalTime().ToString("dd/MM HH:mm")</span>
+                            @if (conv.NoLeidos > 0)
+                            {
+                                <span class="bg-emerald-500 text-white text-[10px] font-black w-6 h-6 rounded-full flex items-center justify-center">@conv.NoLeidos</span>
+                            }
+                        </div>
+
+                        <!-- Expand Icon -->
+                        <span class="material-symbols-outlined text-secondary/30 text-xl transition-transform" id="arrow-@safePhone">expand_more</span>
+                    </div>
+
+                    <!-- Chat Messages (hidden by default) -->
+                    <div class="hidden border-t border-surface-container-low" id="chat-@safePhone">
+                        <!-- Chat container with scrollable area -->
+                        <div class="bg-[#f0f2f5] p-4 space-y-3 max-h-[420px] overflow-y-auto" id="chatscroll-@safePhone">
+                            @foreach (var msg in conv.Mensajes)
+                            {
+                                var isSent = msg.TipoMensaje == "sent_text";
+                                var alignClass = isSent ? "justify-end" : "justify-start";
+                                var bgClass = isSent ? "bg-emerald-100 rounded-tr-sm border border-emerald-200" : "bg-white rounded-tl-sm shadow-sm";
+                                <div class="flex @alignClass">
+                                    <div class="@bgClass rounded-2xl px-4 py-2.5 max-w-[85%] md:max-w-[70%]">
+                                        @{
+                                            var mediaUrl = !string.IsNullOrEmpty(msg.MetaMediaId) 
+                                                ? Url.Action("Media", "MensajesRecibidos", new { id = msg.MetaMediaId })
+                                                : msg.Contenido;
+                                        }
+
+                                        @if (msg.TipoMensaje == "text" || msg.TipoMensaje == "sent_text")
+                                        {
+                                            <p class="text-sm text-gray-800 whitespace-pre-wrap break-words">@msg.Contenido</p>
+                                        }
+                                        else if (msg.TipoMensaje == "image")
+                                        {
+                                            <div class="space-y-1.5">
+                                                <div class="relative group rounded-xl overflow-hidden cursor-pointer" onclick="zoomImage('@mediaUrl')">
+                                                    <img src="@mediaUrl" class="w-full max-w-[280px] rounded-xl object-cover" alt="Comprobante" loading="lazy" />
+                                                    <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                        <span class="material-symbols-outlined text-white text-2xl">zoom_in</span>
+                                                    </div>
+                                                </div>
+                                                <p class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                                                    <span class="material-symbols-outlined text-xs">image</span> Comprobante
+                                                </p>
+                                            </div>
+                                        }
+                                        else if (msg.TipoMensaje == "document")
+                                        {
+                                            <a href="@mediaUrl" download class="flex items-center gap-3 p-2 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                                                <span class="material-symbols-outlined text-red-500 text-2xl">picture_as_pdf</span>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-xs font-bold text-gray-800 truncate">Documento</p>
+                                                    <p class="text-[10px] text-gray-400">Toca para descargar</p>
+                                                </div>
+                                                <span class="material-symbols-outlined text-primary-container text-lg">download</span>
+                                            </a>
+                                        }
+                                        <div class="flex @(isSent ? "justify-start" : "justify-end") items-center gap-1 mt-1">
+                                            <p class="text-[9px] text-gray-400">@msg.FechaRecibido.ToLocalTime().ToString("dd/MM/yy HH:mm")</p>
+                                            @if (isSent)
+                                            {
+                                                <span class="material-symbols-outlined text-[10px] text-emerald-500">check</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Actions Bar -->
+                        <div class="flex items-center justify-between px-5 py-3 bg-white border-t border-gray-100">
+                            <span class="text-[10px] font-bold text-secondary/50">@conv.Mensajes.Count mensaje(s)</span>
+                            <div class="flex items-center gap-2">
+                                @if (User.IsInRole("Admin") || User.IsInRole("Master"))
+                                {
+                                    <button type="button" onclick="eliminarConversacion('@conv.TelefonoRemitente', '@safePhone')" class="soft-button !py-2 !px-4 !bg-red-500 !text-white flex items-center gap-1.5 hover:scale-105 transition-transform text-[10px] font-black uppercase tracking-wider">
+                                        <span class="material-symbols-outlined text-sm">delete</span>
+                                        Eliminar Chat
+                                    </button>
+                                }
+                                @if (conv.NoLeidos > 0)
+                                {
+                                    <button type="button" onclick="marcarTodosLeidos('@conv.TelefonoRemitente', '@safePhone')" class="soft-button !py-2 !px-4 !bg-emerald-500 !text-white flex items-center gap-1.5 hover:scale-105 transition-transform text-[10px] font-black uppercase tracking-wider">
+                                        <span class="material-symbols-outlined text-sm">done_all</span>
+                                        Marcar Todo Leído
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="text-[10px] font-bold text-emerald-500 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-sm">done_all</span> Todos leídos
+                                    </span>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Message Input -->
+                        @if (conv.ClienteId.HasValue)
+                        {
+                            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 flex gap-2 rounded-b-3xl">
+                                <input type="text" id="chat-input-@conv.ClienteId" onkeypress="handleKeyPress(event, @conv.ClienteId)" class="flex-1 soft-input !py-2 !px-4 !rounded-xl text-sm bg-white" placeholder="Escribe un mensaje..." />
+                                <button type="button" onclick="enviarMensajeDesdeInbox(@conv.ClienteId)" class="soft-button !bg-[#25D366] !text-white !p-2 !rounded-xl hover:scale-105 transition-transform flex items-center justify-center shadow-md">
+                                    <span class="material-symbols-outlined text-xl">send</span>
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- Token AntiForgery para AJAX -->
+@Html.AntiForgeryToken()
+
+<!-- Image Zoom Modal -->
+<div id="zoom-modal" class="fixed inset-0 bg-black/90 z-[9999] hidden flex items-center justify-center p-4 transition-all duration-300 opacity-0" onclick="closeZoom()">
+    <button class="absolute top-6 right-6 w-12 h-12 bg-white/10 text-white rounded-full flex items-center justify-center hover:bg-white/20 transition-colors" onclick="closeZoom()">
+        <span class="material-symbols-outlined text-2xl">close</span>
+    </button>
+    <img id="zoom-img" class="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl scale-95 transition-transform duration-300" src="" alt="Comprobante Ampliado" onclick="event.stopPropagation()" />
+</div>
+
+@section Scripts {
+    <script>
+        function toggleConv(phone) {
+            const chat = document.getElementById(`chat-${phone}`);
+            const arrow = document.getElementById(`arrow-${phone}`);
+            
+            if (chat.classList.contains('hidden')) {
+                chat.classList.remove('hidden');
+                arrow.style.transform = 'rotate(180deg)';
+                // Scroll to bottom of chat
+                const scrollArea = document.getElementById(`chatscroll-${phone}`);
+                setTimeout(() => { scrollArea.scrollTop = scrollArea.scrollHeight; }, 50);
+            } else {
+                chat.classList.add('hidden');
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function zoomImage(src) {
+            const modal = document.getElementById('zoom-modal');
+            const img = document.getElementById('zoom-img');
+            img.src = src;
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                img.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeZoom() {
+            const modal = document.getElementById('zoom-modal');
+            const img = document.getElementById('zoom-img');
+            modal.classList.add('opacity-0');
+            img.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                img.src = '';
+            }, 300);
+        }
+
+        function handleKeyPress(e, clienteId) {
+            if (e.key === 'Enter') {
+                enviarMensajeDesdeInbox(clienteId);
+            }
+        }
+
+        async function enviarMensajeDesdeInbox(clienteId) {
+            const input = document.getElementById(`chat-input-${clienteId}`);
+            const mensaje = input.value.trim();
+            if (!mensaje) return;
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const formData = new URLSearchParams();
+            formData.append('clienteId', clienteId);
+            formData.append('mensaje', mensaje);
+            formData.append('__RequestVerificationToken', token);
+
+            try {
+                input.disabled = true;
+                const response = await fetch('/Clientes/EnviarMensajeTexto', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    input.value = '';
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al enviar el mensaje');
+            } finally {
+                input.disabled = false;
+                input.focus();
+            }
+        }
+
+        async function marcarTodosLeidos(telefono, safePhone) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const formData = new URLSearchParams();
+            formData.append('telefono', telefono);
+            formData.append('__RequestVerificationToken', token);
+
+            try {
+                const response = await fetch('/MensajesRecibidos/MarcarTodosLeidos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    // Remove unread indicators
+                    const conv = document.getElementById(`conv-${safePhone}`);
+                    if (conv) {
+                        conv.classList.remove('border-l-4', 'border-primary-container');
+                        conv.classList.add('bg-white/60');
+                    }
+                    // Remove badge
+                    const badge = conv.querySelector('.bg-emerald-500.rounded-full');
+                    if (badge) badge.remove();
+                    // Reload page to refresh state
+                    location.reload();
+                } else {
+                    alert('No se pudo marcar como leído.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error de conexión.');
+            }
+        }
+
+        async function marcarLeido(id) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const formData = new URLSearchParams();
+            formData.append('id', id);
+            formData.append('__RequestVerificationToken', token);
+
+            try {
+                const response = await fetch('/MensajesRecibidos/MarcarLeido', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    location.reload();
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        async function eliminarConversacion(telefono, safePhone) {
+            if (!confirm('¿Estás seguro de que deseas eliminar permanentemente todo el chat con este cliente? Esta acción no se puede deshacer.')) {
+                return;
+            }
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const formData = new URLSearchParams();
+            formData.append('telefono', telefono);
+            formData.append('__RequestVerificationToken', token);
+
+            try {
+                const response = await fetch('/MensajesRecibidos/EliminarConversacion', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const convElement = document.getElementById(`conv-${safePhone}`);
+                    if (convElement) {
+                        convElement.remove();
+                    } else {
+                        window.location.reload();
+                    }
+                } else {
+                    alert('Error al eliminar el chat');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error de conexión');
+            }
+        }
+    </script>
+}

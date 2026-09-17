@@ -1,0 +1,526 @@
+@model string
+<div class="space-y-10 pb-12 px-4">
+    <!-- Header -->
+    <div class="flex items-center gap-5">
+        <div class="w-16 h-16 bg-primary-container text-white rounded-[24px] flex items-center justify-center soft-raised-sm">
+            <span class="material-symbols-outlined text-4xl">settings_suggest</span>
+        </div>
+        <div>
+            <h2 class="text-4xl font-black text-primary-container tracking-tighter">Ajustes</h2>
+            <p class="text-xs font-black text-secondary uppercase tracking-widest opacity-40">Motor de Automatización</p>
+        </div>
+    </div>
+
+    @if (User.IsInRole("Admin"))
+    {
+        <div class="flex justify-end -mb-4">
+            <a href="@Url.Action("Index", "Admin")" class="soft-button soft-button-primary !py-3 !px-6 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-md">
+                <span class="material-symbols-outlined text-base">admin_panel_settings</span>
+                <span>Ir al Panel Administrativo</span>
+            </a>
+        </div>
+    }
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-10">
+        <!-- Canales y Horarios -->
+        <div class="space-y-8">
+            <div class="soft-card !p-8">
+                <h3 class="text-[11px] font-black text-secondary uppercase tracking-[0.2em] mb-8 opacity-40">Canales Activos</h3>
+                
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between p-6 bg-surface rounded-[24px] soft-recessed-sm transition-all hover:soft-raised-sm">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-[16px] flex items-center justify-center">
+                                <span class="material-symbols-outlined">chat</span>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-black text-primary-container">WhatsApp Business</h4>
+                                <p class="text-[10px] font-bold text-secondary opacity-60">Recordatorios automáticos</p>
+                            </div>
+                        </div>
+                        <div class="soft-switch">
+                            <input type="checkbox" id="sw-wa" @(ViewData["WhatsAppActivo"]?.ToString() == "true" ? "checked" : "")>
+                            <label for="sw-wa"></label>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between p-6 bg-surface rounded-[24px] soft-recessed-sm transition-all hover:soft-raised-sm">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-[16px] flex items-center justify-center">
+                                <span class="material-symbols-outlined">mail</span>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-black text-primary-container">Email Directo</h4>
+                                <p class="text-[10px] font-bold text-secondary opacity-60">Envío de comprobantes</p>
+                            </div>
+                        </div>
+                        <div class="soft-switch">
+                            <input type="checkbox" id="sw-mail" @(ViewData["EmailActivo"]?.ToString() == "true" ? "checked" : "")>
+                            <label for="sw-mail"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="soft-card !p-6 sm:!p-8">
+                <h3 class="text-[11px] font-black text-secondary uppercase tracking-[0.2em] mb-6 sm:mb-8 opacity-40">Programación Inteligente</h3>
+                
+                <div class="space-y-4 mb-6 sm:mb-8">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        <div class="space-y-2">
+                            <label class="text-[9px] font-black text-secondary uppercase tracking-widest px-2 opacity-40">Anticipación (Días)</label>
+                            <input type="number" id="inp-dias" value="@ViewData["DiasAnticipacion"]" class="soft-input !py-3 sm:!py-4 !px-4 sm:!px-6 text-center font-black text-base sm:text-lg" />
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[9px] font-black text-secondary uppercase tracking-widest px-2 opacity-40">Hora de Envío</label>
+                            <input type="time" id="inp-hora" value="@ViewData["HoraEnvio"]" class="soft-input !py-3 sm:!py-4 !px-3 sm:!px-6 text-center font-black text-sm sm:text-lg" />
+                        </div>
+                    </div>
+                    @if (User.IsInRole("Master"))
+                    {
+                        <div class="space-y-2">
+                            <label class="text-[9px] font-black text-secondary uppercase tracking-widest px-2 opacity-40">Plantilla de WhatsApp (Meta)</label>
+                            <select id="inp-template-name" class="soft-input !py-3 !px-4 font-black text-xs w-full">
+                                <option value="recordatorio_pago" selected="@(ViewData["WhatsAppTemplateName"]?.ToString() == "recordatorio_pago" ? "selected" : null)">recordatorio_pago (Original - 5 variables)</option>
+                                <option value="recordatorio_pago_completo" selected="@(ViewData["WhatsAppTemplateName"]?.ToString() == "recordatorio_pago_completo" ? "selected" : null)">recordatorio_pago_completo (Con cuentas IBAN - 10 variables)</option>
+                                <option value="recordatorio_pago_cuentas" selected="@(ViewData["WhatsAppTemplateName"]?.ToString() == "recordatorio_pago_cuentas" ? "selected" : null)">recordatorio_pago_cuentas (Con cuentas IBAN - 10 variables)</option>
+                                <option value="recordatorio_pago_dinamico" selected="@(ViewData["WhatsAppTemplateName"]?.ToString() == "recordatorio_pago_dinamico" ? "selected" : null)">recordatorio_pago_dinamico (IBANs dinámicos - 8 variables)</option>
+                            </select>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="space-y-2">
+                            <label class="text-[9px] font-black text-secondary uppercase tracking-widest px-2 opacity-40">Plantilla de WhatsApp (Meta)</label>
+                            <input type="hidden" id="inp-template-name" value="@ViewData["WhatsAppTemplateName"]" />
+                            <div class="soft-input !py-3 !px-4 font-black text-xs w-full opacity-50 cursor-not-allowed">
+                                @ViewData["WhatsAppTemplateName"] (Solo Master)
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <button type="button" id="btnSincronizar" onclick="sincronizarConfig()" class="soft-button soft-button-primary w-full !py-4 sm:!py-5 !rounded-[20px] font-black text-[10px] tracking-[0.2em] shadow-xl">
+                    <span class="material-symbols-outlined text-lg">verified_user</span>
+                    <span>SINCRONIZAR CONFIGURACIÓN</span>
+                </button>
+            </div>
+
+            <!-- Receipt Customization Card -->
+            <div class="soft-card !p-6 sm:!p-8">
+                <h3 class="text-[11px] font-black text-secondary uppercase tracking-[0.2em] mb-6 sm:mb-8 opacity-40">Personalización de Comprobante</h3>
+                <div class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="text-[9px] font-black text-secondary uppercase tracking-widest px-2 opacity-40">Texto Adicional en Recibo (SINPE / Cuentas / Notas)</label>
+                        <textarea id="inp-comprobante-texto" class="soft-input !py-3 !px-4 font-medium text-xs leading-relaxed min-h-[100px] w-full resize-none" placeholder="Escribe aquí los números de cuenta bancaria o notas que deseas que aparezcan al pie del recibo digital.">@ViewData["ComprobanteTextoAdicional"]</textarea>
+                    </div>
+
+                    @if (User.IsInRole("Master"))
+                    {
+                        <div class="space-y-2">
+                            <label class="text-[9px] font-black text-secondary uppercase tracking-widest px-2 opacity-40">Plantilla de WhatsApp para Comprobante (Meta)</label>
+                            <input type="text" id="inp-comprobante-template" value="@ViewData["ComprobanteTemplateName"]" class="soft-input !py-3 !px-4 font-black text-xs w-full" placeholder="comprobante_pago" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="space-y-2">
+                            <label class="text-[9px] font-black text-secondary uppercase tracking-widest px-2 opacity-40">Plantilla de WhatsApp para Comprobante (Meta)</label>
+                            <input type="hidden" id="inp-comprobante-template" value="@ViewData["ComprobanteTemplateName"]" />
+                            <div class="soft-input !py-3 !px-4 font-black text-xs w-full opacity-50 cursor-not-allowed">
+                                @ViewData["ComprobanteTemplateName"] (Solo Master)
+                            </div>
+                        </div>
+                    }
+                    
+                    <button type="button" id="btnGuardarRecibo" onclick="guardarConfigRecibo()" class="soft-button soft-button-primary w-full !py-4 !rounded-[20px] font-black text-[10px] tracking-[0.2em] shadow-xl">
+                        <span class="material-symbols-outlined text-lg">save</span>
+                        <span>GUARDAR PERSONALIZACIÓN</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Plantillas Adicionales Card -->
+            <div class="soft-card !p-6 sm:!p-8">
+                <h3 class="text-[11px] font-black text-secondary uppercase tracking-[0.2em] mb-6 sm:mb-8 opacity-40">Plantillas Adicionales (Meta)</h3>
+                <div class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="text-[9px] font-black text-secondary uppercase tracking-widest px-2 opacity-40">Proyección de Crédito (Nuevo Crédito)</label>
+                        <input type="text" id="inp-template-proyeccion" value="@ViewData["ProyeccionTemplateName"]" class="soft-input !py-3 !px-4 font-black text-xs w-full" @(User.IsInRole("Master") ? "" : "readonly") />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[9px] font-black text-secondary uppercase tracking-widest px-2 opacity-40">Renovación de Crédito</label>
+                        <input type="text" id="inp-template-renovacion" value="@ViewData["RenovacionTemplateName"]" class="soft-input !py-3 !px-4 font-black text-xs w-full" @(User.IsInRole("Master") ? "" : "readonly") />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[9px] font-black text-secondary uppercase tracking-widest px-2 opacity-40">Comprobante (Crédito Solo Interés)</label>
+                        <input type="text" id="inp-template-comprobante-interes" value="@ViewData["ComprobanteInteresTemplateName"]" class="soft-input !py-3 !px-4 font-black text-xs w-full" @(User.IsInRole("Master") ? "" : "readonly") />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[9px] font-black text-secondary uppercase tracking-widest px-2 opacity-40">Comprobante (Pago Capital Diferido - Solo Intereses)</label>
+                        <input type="text" id="inp-template-comprobante-solo-interes" value="@ViewData["ComprobanteSoloInteresTemplateName"]" class="soft-input !py-3 !px-4 font-black text-xs w-full" @(User.IsInRole("Master") ? "" : "readonly") />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[9px] font-black text-secondary uppercase tracking-widest px-2 opacity-40">Creación de Cliente (Nuevo)</label>
+                        <input type="text" id="inp-template-creacion-cliente" value="@ViewData["CreacionClienteTemplateName"]" class="soft-input !py-3 !px-4 font-black text-xs w-full" @(User.IsInRole("Master") ? "" : "readonly") />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[9px] font-black text-secondary uppercase tracking-widest px-2 opacity-40">Anulación de Recibo</label>
+                        <input type="text" id="inp-template-anulacion" value="@ViewData["AnulacionReciboTemplateName"]" class="soft-input !py-3 !px-4 font-black text-xs w-full" @(User.IsInRole("Master") ? "" : "readonly") />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[9px] font-black text-secondary uppercase tracking-widest px-2 opacity-40">Recordatorio (Solo Interés)</label>
+                        <input type="text" id="inp-template-recordatorio-interes" value="@ViewData["RecordatorioSoloInteresTemplateName"]" class="soft-input !py-3 !px-4 font-black text-xs w-full" @(User.IsInRole("Master") ? "" : "readonly") />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[9px] font-black text-secondary uppercase tracking-widest px-2 opacity-40">Mensaje de Texto (Botón WhatsApp)</label>
+                        <input type="text" id="inp-template-mensaje-texto" value="@ViewData["MensajeTextoTemplateName"]" class="soft-input !py-3 !px-4 font-black text-xs w-full" @(User.IsInRole("Master") ? "" : "readonly") />
+                    </div>
+                    
+                    @if (User.IsInRole("Master"))
+                    {
+                        <button type="button" id="btnGuardarPlantillasExtra" onclick="guardarPlantillasExtra()" class="soft-button soft-button-primary w-full !py-4 !rounded-[20px] font-black text-[10px] tracking-[0.2em] shadow-xl">
+                            <span class="material-symbols-outlined text-lg">save</span>
+                            <span>GUARDAR PLANTILLAS</span>
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <!-- Default Payment Methods Card -->
+            <div class="soft-card !p-6 sm:!p-8">
+                <h3 class="text-[11px] font-black text-secondary uppercase tracking-[0.2em] mb-6 sm:mb-8 opacity-40">Datos de Pago Predeterminados (Para Nuevos Créditos)</h3>
+                <div class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="text-[9px] font-black text-secondary uppercase tracking-widest px-2 opacity-40">SINPE Móvil Predeterminado</label>
+                        <input type="text" id="inp-default-sinpe" value="@ViewData["DefaultSinpe"]" class="soft-input !py-3 !px-4 font-black text-xs w-full" placeholder="Ej: 8888-8888" />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[9px] font-black text-secondary uppercase tracking-widest px-2 opacity-40">Cuenta IBAN 1 Predeterminada</label>
+                        <input type="text" id="inp-default-iban1" value="@ViewData["DefaultIban1"]" class="soft-input !py-3 !px-4 font-black text-xs w-full" placeholder="CR00..." />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[9px] font-black text-secondary uppercase tracking-widest px-2 opacity-40">Cuenta IBAN 2 Predeterminada</label>
+                        <input type="text" id="inp-default-iban2" value="@ViewData["DefaultIban2"]" class="soft-input !py-3 !px-4 font-black text-xs w-full" placeholder="CR00..." />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[9px] font-black text-secondary uppercase tracking-widest px-2 opacity-40">Cuenta IBAN 3 Predeterminada</label>
+                        <input type="text" id="inp-default-iban3" value="@ViewData["DefaultIban3"]" class="soft-input !py-3 !px-4 font-black text-xs w-full" placeholder="CR00..." />
+                    </div>
+                    
+                    <button type="button" id="btnGuardarCuentasDefault" onclick="guardarCuentasDefault()" class="soft-button soft-button-primary w-full !py-4 !rounded-[20px] font-black text-[10px] tracking-[0.2em] shadow-xl">
+                        <span class="material-symbols-outlined text-lg">payments</span>
+                        <span>GUARDAR DATOS PREESTABLECIDOS</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="soft-card p-4 sm:!p-10 !bg-primary-container relative overflow-hidden flex flex-col">
+            <!-- Decoration -->
+            <div class="absolute -right-20 -bottom-20 w-64 h-64 bg-white opacity-[0.03] rounded-full"></div>
+            
+            <h3 class="text-[11px] font-black text-white uppercase tracking-[0.2em] mb-10 opacity-30">Vista Previa Dinámica</h3>
+            
+            <div class="bg-white rounded-[32px] p-4 sm:p-8 shadow-2xl relative z-10 flex-1 flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white">
+                            <span class="material-symbols-outlined text-xl">person</span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black text-emerald-600 uppercase tracking-tighter">Bot de Cobros</p>
+                            <p class="text-[8px] font-bold text-secondary opacity-40">En línea ahora</p>
+                        </div>
+                    </div>
+                    <span class="material-symbols-outlined text-emerald-500">verified</span>
+                </div>
+
+                <!-- Burbuja de Chat Editable -->
+                <div class="flex-1 flex flex-col justify-center py-4">
+                    <div class="soft-recessed p-3 sm:p-6 rounded-[24px] bg-slate-50 border border-slate-100 group relative w-full">
+                        <div id="editablePlantilla" contenteditable="true" class="text-sm font-medium text-slate-700 leading-relaxed outline-none focus:ring-2 focus:ring-primary-container/20 rounded-lg p-2 transition-all w-full min-h-[100px]">
+                            @Html.Raw(Model)
+                        </div>
+                    </div>
+
+                    <!-- Variables / Chips -->
+                    <div class="mt-6 flex flex-wrap gap-2">
+                        <button type="button" onclick="insertVar('[Nombre Cliente]')" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-full text-[9px] font-black opacity-60 transition-colors">[Nombre Cliente]</button>
+                        <button type="button" onclick="insertVar('[Nombre Credito]')" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-full text-[9px] font-black opacity-60 transition-colors">[Nombre Credito]</button>
+                        <button type="button" onclick="insertVar('[Numero Cuota]')" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-full text-[9px] font-black opacity-60 transition-colors">[Numero Cuota]</button>
+                        <button type="button" onclick="insertVar('[Monto]')" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-full text-[9px] font-black opacity-60 transition-colors">[Monto]</button>
+                        <button type="button" onclick="insertVar('[Fecha]')" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-full text-[9px] font-black opacity-60 transition-colors">[Fecha]</button>
+                        <button type="button" onclick="insertVar('[SINPE]')" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-full text-[9px] font-black opacity-60 transition-colors">[SINPE]</button>
+                        <button type="button" onclick="insertVar('[Siguiente Pago]')" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-full text-[9px] font-black opacity-60 transition-colors">[Siguiente Pago]</button>
+                    </div>
+                </div>
+
+                <div class="mt-4 flex justify-between items-center border-t border-slate-50 pt-6">
+                    <span class="text-[9px] font-bold text-secondary opacity-40 italic">Enviado a las 09:00 AM</span>
+                    <div class="flex gap-3">
+                        <button type="button" onclick="resetPlantilla()" class="text-[10px] font-black text-secondary opacity-40 hover:opacity-100 transition-opacity uppercase tracking-widest">Descartar</button>
+                        <button type="button" id="btnGuardar" onclick="guardarPlantilla()" class="px-6 py-2 bg-primary-container text-white rounded-xl text-[10px] font-black uppercase tracking-widest soft-raised-sm active:soft-recessed-sm transition-all flex items-center gap-2">
+                            <span>Guardar Cambios</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let originalContent = document.getElementById('editablePlantilla').innerHTML;
+
+    function insertVar(variable) {
+        const editable = document.getElementById('editablePlantilla');
+        editable.focus();
+        const span = document.createElement('span');
+        span.className = 'font-black text-primary-container';
+        span.contentEditable = 'false';
+        span.innerText = variable;
+        
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            range.deleteContents();
+            range.insertNode(span);
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            selection.addRange(range);
+        } else {
+            editable.appendChild(span);
+        }
+    }
+
+    function resetPlantilla() {
+        if (confirm('¿Deseas descartar los cambios actuales?')) {
+            document.getElementById('editablePlantilla').innerHTML = originalContent;
+        }
+    }
+
+    async function guardarPlantilla() {
+        const btn = document.getElementById('btnGuardar');
+        const content = document.getElementById('editablePlantilla').innerHTML;
+        const originalText = btn.innerHTML;
+
+        try {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">sync</span><span>Guardando...</span>';
+
+            const response = await fetch('@Url.Action("ActualizarPlantilla", "Notificaciones")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({ 'valor': content })
+            });
+
+            if (response.ok) {
+                originalContent = content;
+                btn.classList.replace('bg-primary-container', 'bg-emerald-500');
+                btn.innerHTML = '<span class="material-symbols-outlined text-sm">check</span><span>¡Guardado!</span>';
+                setTimeout(() => {
+                    btn.classList.replace('bg-emerald-500', 'bg-primary-container');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+            } else {
+                throw new Error('Error al guardar');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('No se pudo guardar la plantilla. Intente de nuevo.');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    async function sincronizarConfig() {
+        const btn = document.getElementById('btnSincronizar');
+        const dias = document.getElementById('inp-dias').value;
+        const hora = document.getElementById('inp-hora').value;
+        const waActivo = document.getElementById('sw-wa').checked ? "true" : "false";
+        const emailActivo = document.getElementById('sw-mail').checked ? "true" : "false";
+        const templateName = document.getElementById('inp-template-name').value;
+        
+        const originalText = btn.innerHTML;
+        
+        try {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-lg">sync</span><span>Sincronizando...</span>';
+            
+            const response = await fetch('@Url.Action("GuardarConfigAutomatizacion", "Notificaciones")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'diasAnticipacion': dias,
+                    'horaEnvio': hora,
+                    'whatsAppActivo': waActivo,
+                    'emailActivo': emailActivo,
+                    'whatsAppTemplateName': templateName
+                })
+            });
+            
+            if (response.ok) {
+                btn.classList.replace('soft-button-primary', 'bg-emerald-500');
+                btn.innerHTML = '<span class="material-symbols-outlined text-lg">done</span><span>¡Configuración Sincronizada!</span>';
+                setTimeout(() => {
+                    btn.classList.replace('bg-emerald-500', 'soft-button-primary');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+            } else {
+                throw new Error('Error al sincronizar');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('No se pudo guardar la configuración de automatización.');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    async function guardarConfigRecibo() {
+        const btn = document.getElementById('btnGuardarRecibo');
+        const text = document.getElementById('inp-comprobante-texto').value;
+        const templateName = document.getElementById('inp-comprobante-template').value;
+        const originalText = btn.innerHTML;
+        
+        try {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-lg">sync</span><span>Guardando...</span>';
+            
+            const response = await fetch('@Url.Action("GuardarConfigRecibo", "Notificaciones")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'textoAdicional': text,
+                    'whatsAppComprobanteTemplateName': templateName
+                })
+            });
+            
+            if (response.ok) {
+                btn.classList.replace('soft-button-primary', 'bg-emerald-500');
+                btn.innerHTML = '<span class="material-symbols-outlined text-lg">done</span><span>¡Guardado Exitosamente!</span>';
+                setTimeout(() => {
+                    btn.classList.replace('bg-emerald-500', 'soft-button-primary');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+            } else {
+                throw new Error('Error al guardar');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('No se pudo guardar la personalización del recibo.');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    async function guardarCuentasDefault() {
+        const btn = document.getElementById('btnGuardarCuentasDefault');
+        const sinpe = document.getElementById('inp-default-sinpe').value;
+        const iban1 = document.getElementById('inp-default-iban1').value;
+        const iban2 = document.getElementById('inp-default-iban2').value;
+        const iban3 = document.getElementById('inp-default-iban3').value;
+        const originalText = btn.innerHTML;
+        
+        try {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-lg">sync</span><span>Guardando...</span>';
+            
+            const response = await fetch('@Url.Action("GuardarConfigCuentasDefault", "Notificaciones")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'defaultSinpe': sinpe,
+                    'defaultIban1': iban1,
+                    'defaultIban2': iban2,
+                    'defaultIban3': iban3
+                })
+            });
+            
+            if (response.ok) {
+                btn.classList.replace('soft-button-primary', 'bg-emerald-500');
+                btn.innerHTML = '<span class="material-symbols-outlined text-lg">done</span><span>¡Datos Guardados!</span>';
+                setTimeout(() => {
+                    btn.classList.replace('bg-emerald-500', 'soft-button-primary');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+            } else {
+                throw new Error('Error al guardar');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('No se pudo guardar la configuración de cuentas predeterminadas.');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    async function guardarPlantillasExtra() {
+        const btn = document.getElementById('btnGuardarPlantillasExtra');
+        const proyeccion = document.getElementById('inp-template-proyeccion').value;
+        const renovacion = document.getElementById('inp-template-renovacion').value;
+        const comprobanteInteres = document.getElementById('inp-template-comprobante-interes').value;
+        const comprobanteSoloInteres = document.getElementById('inp-template-comprobante-solo-interes').value;
+        const creacionCliente = document.getElementById('inp-template-creacion-cliente').value;
+        const anulacionRecibo = document.getElementById('inp-template-anulacion').value;
+        const recordatorioSoloInteres = document.getElementById('inp-template-recordatorio-interes').value;
+        const mensajeTexto = document.getElementById('inp-template-mensaje-texto').value;
+        
+        const originalText = btn.innerHTML;
+        
+        try {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-lg">sync</span><span>Guardando...</span>';
+            
+            const response = await fetch('@Url.Action("GuardarPlantillasAdicionales", "Notificaciones")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'proyeccionTemplateName': proyeccion,
+                    'renovacionTemplateName': renovacion,
+                    'comprobanteInteresTemplateName': comprobanteInteres,
+                    'comprobanteSoloInteresTemplateName': comprobanteSoloInteres,
+                    'creacionClienteTemplateName': creacionCliente,
+                    'anulacionReciboTemplateName': anulacionRecibo,
+                    'recordatorioSoloInteresTemplateName': recordatorioSoloInteres,
+                    'mensajeTextoTemplateName': mensajeTexto
+                })
+            });
+            
+            if (response.ok) {
+                btn.classList.replace('soft-button-primary', 'bg-emerald-500');
+                btn.innerHTML = '<span class="material-symbols-outlined text-lg">done</span><span>¡Guardado Exitosamente!</span>';
+                setTimeout(() => {
+                    btn.classList.replace('bg-emerald-500', 'soft-button-primary');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+            } else {
+                throw new Error('Error al guardar plantillas');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('No se pudo guardar la configuración de plantillas adicionales.');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+</script>
+

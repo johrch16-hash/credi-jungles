@@ -1,0 +1,100 @@
+@model IEnumerable<PrestamosCobros.BLL.DTOs.UsuarioListDto>
+@{
+    ViewData["Title"] = "Gestión de Personal";
+}
+
+<div class="flex flex-col gap-8">
+    <!-- Header Action Section -->
+    <section class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div class="flex items-center gap-5">
+            <div class="w-14 h-14 bg-primary-container text-white rounded-[22px] flex items-center justify-center soft-raised-sm">
+                <span class="material-symbols-outlined text-3xl">manage_accounts</span>
+            </div>
+            <div>
+                <h1 class="text-2xl font-black text-primary-container tracking-tighter leading-none">Personal</h1>
+                <p class="text-[10px] font-bold text-secondary uppercase opacity-40 mt-1 tracking-widest">Directorio de Equipo</p>
+            </div>
+        </div>
+        <a href="@Url.Action("Crear")" class="bg-primary-container text-white px-8 py-4 rounded-2xl soft-raised hover:soft-recessed transition-all flex items-center gap-2 font-bold text-sm">
+            <span class="material-symbols-outlined text-[20px]">person_add</span>
+            Registrar Nuevo Personal
+        </a>
+    </section>
+
+    <!-- Employee List -->
+    <div class="grid grid-cols-1 gap-6">
+        @foreach (var item in Model)
+        {
+            <article class="bg-surface p-6 rounded-3xl soft-raised flex flex-col md:flex-row items-center justify-between gap-6 border border-white/50">
+                <div class="flex items-center gap-6 w-full md:w-auto">
+                    <div class="w-16 h-16 rounded-full soft-recessed-sm p-1 bg-white">
+                        <div class="w-full h-full rounded-full bg-primary-container flex items-center justify-center text-white font-black text-xl">
+                            @(item.NombreCompleto != null && item.NombreCompleto.Length > 0 ? item.NombreCompleto.Substring(0, 1).ToUpper() : "U")
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-primary-container leading-tight">@item.NombreCompleto</h3>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="inline-flex items-center px-4 py-1 bg-primary-container/10 text-primary-container text-[10px] font-black uppercase tracking-widest rounded-full mt-1">@item.Rol</span>
+                            <span class="text-[11px] font-bold text-secondary opacity-40 lowercase">@item.Email</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-8 justify-between w-full md:w-auto">
+                    <!-- Access Toggle -->
+                    <div class="flex items-center gap-4">
+                        <span class="text-[10px] font-bold text-secondary uppercase opacity-60 tracking-wider">Estado de Acceso</span>
+                        <button onclick="toggleUserStatus(@item.Id)" 
+                                id="toggle-@item.Id"
+                                class="w-12 h-6 @(item.Activo ? "bg-primary-container" : "bg-slate-100") rounded-full soft-recessed relative transition-colors">
+                            <div class="absolute top-1 left-1 w-4 h-4 bg-white rounded-full soft-raised-sm transition-transform @(item.Activo ? "translate-x-6" : "translate-x-0")"></div>
+                        </button>
+                    </div>
+                    <div class="flex gap-4">
+                        <a href="@Url.Action("Editar", "Usuarios", new { id = item.Id })" class="w-12 h-12 rounded-xl soft-card flex items-center justify-center text-primary-container hover:soft-raised-sm transition-all active:soft-recessed">
+                            <span class="material-symbols-outlined">edit</span>
+                        </a>
+                        <form asp-action="Eliminar" asp-controller="Usuarios" method="post" onsubmit="return confirm('¿Está seguro de eliminar a este empleado permanentemente?');" class="m-0 p-0">
+                            <input type="hidden" name="id" value="@item.Id" />
+                            <button type="submit" class="w-12 h-12 rounded-xl soft-card flex items-center justify-center text-red-500 hover:bg-red-50 hover:soft-raised-sm transition-all active:soft-recessed">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function toggleUserStatus(id) {
+            const btn = document.getElementById(`toggle-${id}`);
+            const dot = btn.querySelector('div');
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            
+            try {
+                const response = await fetch(`/Usuarios/ToggleStatus/${id}`, { 
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': token
+                    }
+                });
+                if (response.ok) {
+                    const isActive = dot.classList.contains('translate-x-0');
+                    if (isActive) {
+                        dot.classList.replace('translate-x-0', 'translate-x-6');
+                        btn.classList.replace('bg-slate-100', 'bg-primary-container');
+                    } else {
+                        dot.classList.replace('translate-x-6', 'translate-x-0');
+                        btn.classList.replace('bg-primary-container', 'bg-slate-100');
+                    }
+                }
+            } catch (error) {
+                console.error("Error al cambiar estado:", error);
+            }
+        }
+    </script>
+}
+

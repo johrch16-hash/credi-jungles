@@ -1,0 +1,141 @@
+@model PrestamosCobros.DAL.Entities.SoporteTicket
+@{
+    ViewData["Title"] = $"Ticket #{Model.SoporteTicketId} - Soporte";
+    bool esMaster = (bool)(ViewData["EsMaster"] ?? false);
+    string badgeBg = Model.Estado switch {
+        "Pendiente" => "bg-amber-100 text-amber-700 border-amber-300",
+        "En Proceso" => "bg-blue-100 text-blue-700 border-blue-300",
+        "Resuelto" => "bg-emerald-100 text-emerald-700 border-emerald-300",
+        _ => "bg-slate-100 text-slate-700 border-slate-300"
+    };
+}
+
+<div class="max-w-4xl mx-auto space-y-8 pb-12">
+    <!-- Header -->
+    <div class="flex items-center justify-between gap-4 flex-wrap">
+        <div class="flex items-center gap-4">
+            <a href="@Url.Action("Index", "Soporte")" class="w-10 h-10 bg-slate-100 text-slate-700 rounded-xl flex items-center justify-center hover:bg-slate-200 transition-colors">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <div>
+                <h2 class="text-3xl font-black text-primary-container tracking-tighter">Ticket #@Model.SoporteTicketId</h2>
+                <p class="text-xs font-bold text-secondary uppercase tracking-widest opacity-60">Creado el @Model.FechaCreacion.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")</p>
+            </div>
+        </div>
+
+        <span class="px-4 py-1.5 text-xs font-black uppercase tracking-wider rounded-full border @badgeBg">
+            @Model.Estado
+        </span>
+    </div>
+
+    <!-- Alertas Flash -->
+    @if (ViewBag.SuccessMessage != null || TempData["SuccessMessage"] != null)
+    {
+        <div class="p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 rounded-2xl flex items-center gap-3 text-sm font-bold animate-fade-in mb-6">
+            <span class="material-symbols-outlined text-emerald-600">check_circle</span>
+            <span>@(ViewBag.SuccessMessage ?? TempData["SuccessMessage"])</span>
+        </div>
+    }
+
+    <!-- Detalle del Ticket -->
+    <div class="soft-card p-6 sm:p-8 space-y-6">
+        <!-- Remitente Info -->
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-primary-container text-white rounded-full flex items-center justify-center font-black text-lg">
+                    @(Model.NombreUsuario.Length > 0 ? Model.NombreUsuario.Substring(0, 1).ToUpper() : "U")
+                </div>
+                <div>
+                    <h3 class="text-base font-black text-primary-container">@Model.NombreUsuario</h3>
+                    <p class="text-xs font-medium text-slate-500">@Model.EmailUsuario</p>
+                </div>
+            </div>
+            <span class="text-xs font-bold text-slate-400">ID Usuario: @Model.UsuarioId</span>
+        </div>
+
+        <!-- Asunto -->
+        <div>
+            <span class="text-[10px] font-black uppercase tracking-widest text-secondary opacity-40 block mb-1">Asunto</span>
+            <h1 class="text-xl font-black text-primary-container">@Model.Titulo</h1>
+        </div>
+
+        <!-- Mensaje -->
+        <div>
+            <span class="text-[10px] font-black uppercase tracking-widest text-secondary opacity-40 block mb-1">Descripción / Mensaje</span>
+            <div class="bg-slate-50 border border-slate-200/60 p-5 rounded-2xl text-sm font-medium text-slate-700 leading-relaxed whitespace-pre-wrap">
+                @Model.Mensaje
+            </div>
+        </div>
+
+        <!-- Imagen Adjunta -->
+        @if (!string.IsNullOrEmpty(Model.ImagenUrl))
+        {
+            <div>
+                <span class="text-[10px] font-black uppercase tracking-widest text-secondary opacity-40 block mb-2">Captura de Pantalla Adjunta</span>
+                <div class="rounded-2xl overflow-hidden border border-slate-200 max-w-lg">
+                    <a href="@Model.ImagenUrl" target="_blank" title="Ver imagen en tamaño completo">
+                        <img src="@Model.ImagenUrl" alt="Adjunto Soporte" class="w-full max-h-96 object-contain bg-slate-900/5 hover:opacity-95 transition-opacity" />
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Respuesta del Usuario Master -->
+    @if (!string.IsNullOrEmpty(Model.RespuestaMaster))
+    {
+        <div class="soft-card p-6 sm:p-8 space-y-4 border-l-4 border-emerald-500 bg-emerald-500/5">
+            <div class="flex items-center gap-3 text-emerald-700">
+                <span class="material-symbols-outlined text-2xl">verified_user</span>
+                <div>
+                    <h3 class="text-base font-black">Respuesta de Soporte Master</h3>
+                    <p class="text-xs font-bold opacity-60">Respondido el @Model.FechaRespuesta?.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")</p>
+                </div>
+            </div>
+
+            <div class="bg-white border border-emerald-200 p-5 rounded-2xl text-sm font-medium text-slate-800 leading-relaxed whitespace-pre-wrap shadow-sm">
+                @Model.RespuestaMaster
+            </div>
+        </div>
+    }
+
+    <!-- Panel de Gestión Exclusivo para Usuario Master -->
+    @if (esMaster)
+    {
+        <div class="soft-card p-6 sm:p-8 space-y-6 border-2 border-primary-container/20">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-2xl text-primary-container">shield_person</span>
+                <h3 class="text-lg font-black text-primary-container">Gestión de Ticket (Panel Master)</h3>
+            </div>
+
+            <form asp-action="Responder" asp-controller="Soporte" method="post" class="space-y-6">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.SoporteTicketId" />
+
+                <!-- Cambiar Estado -->
+                <div class="space-y-2">
+                    <label class="text-xs font-black text-primary-container uppercase tracking-wider block">Estado del Ticket</label>
+                    <select name="estado" class="soft-input w-full !py-3 !px-4 text-xs font-black">
+                        <option value="Pendiente" selected="@(Model.Estado == "Pendiente" ? "selected" : null)">Pendiente</option>
+                        <option value="En Proceso" selected="@(Model.Estado == "En Proceso" ? "selected" : null)">En Proceso</option>
+                        <option value="Resuelto" selected="@(Model.Estado == "Resuelto" ? "selected" : null)">Resuelto</option>
+                        <option value="Cerrado" selected="@(Model.Estado == "Cerrado" ? "selected" : null)">Cerrado</option>
+                    </select>
+                </div>
+
+                <!-- Escribir / Editar Respuesta -->
+                <div class="space-y-2">
+                    <label class="text-xs font-black text-primary-container uppercase tracking-wider block">Respuesta para el Administrador</label>
+                    <textarea name="respuesta" rows="4" placeholder="Escriba la solución o indicaciones para responder al usuario..." class="soft-input w-full !py-3 !px-4 text-sm font-medium">@Model.RespuestaMaster</textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <button type="submit" class="soft-button soft-button-primary !py-3.5 !px-8 text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-xl">
+                        <span class="material-symbols-outlined text-lg">save</span>
+                        <span>Guardar Respuesta y Notificar</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    }
+</div>

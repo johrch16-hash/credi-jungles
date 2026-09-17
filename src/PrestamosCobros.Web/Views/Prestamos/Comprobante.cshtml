@@ -1,0 +1,254 @@
+@inject PrestamosCobros.BLL.Interfaces.INotificacionService NotificacionService
+@model PrestamosCobros.BLL.DTOs.PagoDetalleDto
+@{
+    ViewData["Title"] = $"Comprobante PAG-{Model.PagoId:D6}";
+    var texto = ViewData["TextoComprobante"] as string;
+    var waText = System.Net.WebUtility.UrlEncode(texto ?? "");
+    var waPhone = Model.ClienteTelefono.Replace("-", "").Replace(" ", "").Replace("+", "");
+    if (!waPhone.StartsWith("506") && waPhone.Length == 8) waPhone = "506" + waPhone;
+    var textoAdicional = await NotificacionService.ObtenerPreferenciaAsync("Comprobante_TextoAdicional", "");
+}
+
+<style>
+    body {
+        background-color: #faf9fc;
+        font-family: 'Outfit', 'Inter', sans-serif;
+    }
+    .ticket-container {
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    .ticket-receipt {
+        background-color: #ffffff;
+        box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.06);
+        padding: 2.5rem 2rem;
+        border-radius: 32px;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        position: relative;
+        overflow: hidden;
+    }
+    /* Decoración superior en el recibo */
+    .ticket-receipt::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, #0f172a, #1e293b);
+    }
+    .btn-action {
+        border-radius: 20px;
+        padding: 1.2rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        font-size: 10px;
+        letter-spacing: 0.15em;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    }
+    .btn-action:active {
+        transform: scale(0.98);
+    }
+    .btn-pdf {
+        background-color: #f1f5f9;
+        color: #0f172a;
+        border: 1px solid #e2e8f0;
+    }
+    .btn-pdf:hover {
+        background-color: #e2e8f0;
+    }
+    .btn-whatsapp {
+        background-color: #e8f5e9;
+        color: #1b5e20;
+        border: 1px solid #c8e6c9;
+    }
+    .btn-whatsapp:hover {
+        background-color: #c8e6c9;
+    }
+</style>
+
+<!-- Header -->
+<div class="flex items-center gap-4 mb-8 mt-6 px-4">
+    <a href="@Url.Action("Detalle", new { id = Model.PrestamoId })" class="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-secondary hover:text-primary-container transition-all active:scale-90 border border-slate-100">
+        <span class="material-symbols-outlined">arrow_back</span>
+    </a>
+    <h2 class="text-xl font-black text-primary-container tracking-tight">Comprobante de Pago</h2>
+</div>
+
+<div class="container pb-12 mb-5">
+    <div class="ticket-container flex flex-col align-items-center gap-6">
+        <!-- Ticket de Comprobante -->
+        <div class="ticket-receipt w-full" id="ticket-content">
+            <!-- Estatus de Pago -->
+            <div class="flex flex-col items-center mb-8">
+                <div class="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-3 shadow-[0_8px_20px_rgba(16,185,129,0.12)] border border-emerald-100">
+                    <span class="material-symbols-outlined text-3xl">check_circle</span>
+                </div>
+                <h3 class="text-xs font-black text-emerald-600 uppercase tracking-widest">Pago Recibido</h3>
+                <p class="text-[9px] font-bold text-secondary opacity-40 uppercase tracking-wider mt-1">Ref: PAG-@Model.PagoId.ToString("D6")</p>
+            </div>
+            
+            <!-- Monto Destacado -->
+            <div class="text-center py-6 bg-slate-50/50 rounded-[24px] border border-slate-100 mb-8">
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Monto Abonado</span>
+                <h2 class="text-3xl font-black text-slate-800 tracking-tight mt-1">₡@Model.MontoPagado.ToString("N0")</h2>
+            </div>
+            
+            <!-- Detalles de la Transacción -->
+            <div class="space-y-4">
+                <div class="flex justify-between items-center py-2 border-b border-slate-50">
+                    <span class="text-[9px] font-black text-secondary uppercase tracking-widest opacity-40">Cliente</span>
+                    <span class="text-xs font-black text-primary-container">@Model.ClienteNombre</span>
+                </div>
+                
+                <div class="flex justify-between items-center py-2 border-b border-slate-50">
+                    <span class="text-[9px] font-black text-secondary uppercase tracking-widest opacity-40">Cuota</span>
+                    <span class="text-xs font-black text-primary-container">#@Model.NumeroCuota</span>
+                </div>
+
+                <div class="flex justify-between items-center py-2 border-b border-slate-50">
+                    <span class="text-[9px] font-black text-secondary uppercase tracking-widest opacity-40">Fecha y Hora</span>
+                    <span class="text-xs font-black text-primary-container text-right">@Model.FechaPago.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+
+                <div class="flex justify-between items-center py-2 border-b border-slate-50">
+                    <span class="text-[9px] font-black text-secondary uppercase tracking-widest opacity-40">Saldo Pendiente</span>
+                    <span class="text-xs font-black text-primary-container">₡@Model.SaldoPendiente.ToString("N0")</span>
+                </div>
+
+                <div class="flex justify-between items-center py-2">
+                    <span class="text-[9px] font-black text-secondary uppercase tracking-widest opacity-40">Próximo Pago</span>
+                    @if (Model.FechaProximoPago.HasValue)
+                    {
+                        <span class="text-xs font-black text-primary-container">@Model.FechaProximoPago.Value.ToString("dd/MM/yyyy")</span>
+                    }
+                    else
+                    {
+                        <span class="text-xs font-black text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-lg border border-emerald-100">Prestamo Liquidado</span>
+                    }
+                </div>
+            </div>
+
+            <!-- Información Adicional Personalizada -->
+            @if (!string.IsNullOrWhiteSpace(textoAdicional))
+            {
+                <div class="mt-8 p-5 bg-slate-50/50 border border-slate-100 rounded-[20px] text-[10.5px] text-slate-500 leading-relaxed font-medium">
+                    <p class="font-black text-primary-container text-[8.5px] uppercase tracking-wider mb-2 opacity-50 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-xs">info</span>
+                        <span>Cuentas de Pago / Notas</span>
+                    </p>
+                    <p class="whitespace-pre-line text-slate-600">@textoAdicional</p>
+                </div>
+            }
+
+            <div class="text-center mt-10 text-[10px] font-black text-secondary opacity-30 uppercase tracking-widest">
+                Credi Jungles • Gracias por su preferencia
+            </div>
+        </div>
+
+        <!-- Contenedor de Alertas -->
+        <div id="alert-container" class="w-full hidden"></div>
+
+        <!-- Botones de Acción -->
+        <div class="w-full flex flex-col gap-3 mt-3">
+            <a href="@Url.Action("DescargarPdf", "Prestamos", new { id = Model.PagoId })" class="btn-action btn-pdf w-full">
+                <span class="material-symbols-outlined">picture_as_pdf</span> Descargar PDF
+            </a>
+            <button type="button" id="btn-enviar-wa" class="btn-action btn-whatsapp w-full">
+                <span class="material-symbols-outlined" id="wa-icon">send</span> <span id="wa-text-btn">Enviar por WhatsApp</span>
+            </button>
+            
+            <!-- Botón de contingencia manual (se muestra si falla el envío por API) -->
+            <a href="https://wa.me/@waPhone?text=@waText" target="_blank" id="wa-fallback-btn" class="btn-action w-full hidden" style="background-color: #fff8e1; color: #b78103; border: 1px solid #ffe082;">
+                <span class="material-symbols-outlined">open_in_new</span> Abrir WhatsApp Manual
+            </a>
+        </div>
+    </div>
+</div>
+
+<form id="antiForgeryForm" method="post">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#btn-enviar-wa').on('click', function() {
+                const btn = $(this);
+                const icon = $('#wa-icon');
+                const textBtn = $('#wa-text-btn');
+                const alertContainer = $('#alert-container');
+                const fallbackBtn = $('#wa-fallback-btn');
+
+                // Restablecer estados
+                alertContainer.addClass('hidden').html('');
+                fallbackBtn.addClass('hidden');
+
+                // Estado de carga
+                btn.prop('disabled', true);
+                icon.text('sync').addClass('animate-spin');
+                textBtn.text('Enviando...');
+
+                const token = $('#antiForgeryForm input[name="__RequestVerificationToken"]').val();
+
+                $.ajax({
+                    url: '@Url.Action("EnviarComprobanteWhatsApp", "Prestamos")',
+                    type: 'POST',
+                    data: { 
+                        id: @Model.PagoId,
+                        __RequestVerificationToken: token
+                    },
+                    success: function(response) {
+                        btn.prop('disabled', false);
+                        icon.text('check_circle').removeClass('animate-spin');
+                        textBtn.text('Enviado');
+                        
+                        alertContainer.removeClass('hidden').html(`
+                            <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-[20px] flex items-start gap-3">
+                                <span class="material-symbols-outlined text-emerald-500">check_circle</span>
+                                <div class="text-left">
+                                    <p class="text-xs font-black text-emerald-800">¡Enviado con éxito!</p>
+                                    <p class="text-[10px] text-emerald-600 mt-0.5">El comprobante se ha enviado mediante WhatsApp Cloud API (plantilla "comprobante_pago").</p>
+                                </div>
+                            </div>
+                        `);
+                    },
+                    error: function(xhr) {
+                        btn.prop('disabled', false);
+                        icon.text('error').removeClass('animate-spin');
+                        textBtn.text('Reintentar');
+                        
+                        let errorMsg = "No se pudo enviar el comprobante de forma automática. Verifique que la plantilla 'comprobante_pago' esté registrada y aprobada en Meta.";
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+
+                        alertContainer.removeClass('hidden').html(`
+                            <div class="p-4 bg-rose-50 border border-rose-100 rounded-[20px] flex items-start gap-3">
+                                <span class="material-symbols-outlined text-rose-500">warning</span>
+                                <div class="text-left">
+                                    <p class="text-xs font-black text-rose-800">Error al enviar por API</p>
+                                    <p class="text-[10px] text-rose-600 mt-0.5">${errorMsg}</p>
+                                </div>
+                            </div>
+                        `);
+
+                        // Mostrar botón manual de contingencia
+                        fallbackBtn.removeClass('hidden');
+                    }
+                });
+            });
+        });
+    </script>
+}

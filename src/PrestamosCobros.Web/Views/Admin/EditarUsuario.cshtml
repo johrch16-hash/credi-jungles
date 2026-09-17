@@ -1,0 +1,220 @@
+@model PrestamosCobros.BLL.DTOs.UsuarioEditDto
+@{
+    ViewData["Title"] = "Editar Personal";
+}
+
+<div class="max-w-2xl mx-auto pt-8">
+    <div class="mb-10">
+        <h2 class="text-3xl font-black text-primary-container tracking-tighter">Editar Perfil</h2>
+        <p class="text-sm font-medium text-secondary opacity-60">Actualiza la información y permisos de @Model.NombreCompleto.</p>
+    </div>
+
+    <div class="bg-surface rounded-[40px] soft-raised p-6 sm:p-10 border border-white/50">
+        <form asp-action="EditarUsuario" method="post" class="space-y-8">
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="text-rose-500 text-xs font-bold mb-4"></div>
+
+            <div class="flex flex-col items-center gap-4 mb-8">
+                <div class="w-24 h-24 rounded-full soft-recessed p-1 bg-white relative">
+                    <div class="w-full h-full rounded-full bg-primary-container flex items-center justify-center text-white font-black text-3xl">
+                        @(Model.NombreCompleto != null && Model.NombreCompleto.Length > 0 ? Model.NombreCompleto.Substring(0, 1).ToUpper() : "U")
+                    </div>
+                </div>
+                <p class="text-[10px] font-black text-secondary opacity-40 uppercase tracking-[0.3em]">ID Usuario: #@Model.Id</p>
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-xs font-black text-primary-container uppercase tracking-widest ml-1">Nombre Completo</label>
+                <input asp-for="NombreCompleto" class="w-full bg-surface border-none rounded-2xl soft-recessed px-6 py-4 focus:ring-2 focus:ring-primary-container/10 text-primary-container font-bold" />
+                <span asp-validation-for="NombreCompleto" class="text-rose-500 text-[10px] font-bold"></span>
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-xs font-black text-primary-container uppercase tracking-widest ml-1">Número de Teléfono</label>
+                <input asp-for="Telefono" class="w-full bg-surface border-none rounded-2xl soft-recessed px-6 py-4 focus:ring-2 focus:ring-primary-container/10 text-primary-container font-bold" placeholder="Ej. +506 8888-8888" />
+                <span asp-validation-for="Telefono" class="text-rose-500 text-[10px] font-bold"></span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-2">
+                    <label class="text-xs font-black text-primary-container uppercase tracking-widest ml-1">Rol de Acceso</label>
+                    <div class="relative">
+                        <select asp-for="Rol" class="w-full bg-surface border-none rounded-2xl soft-recessed px-6 py-4 focus:ring-2 focus:ring-primary-container/10 text-primary-container font-bold appearance-none">
+                            <option value="Admin">Administrador</option>
+                            <option value="Asistente">Asistente</option>
+                            <option value="Cobrador">Cobrador</option>
+                        </select>
+                        <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary opacity-40">expand_more</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs font-black text-primary-container uppercase tracking-widest ml-1">Estado de la Cuenta</label>
+                    <div class="flex items-center gap-4 py-4">
+                        <span class="text-xs font-bold @(Model.Activo ? "text-primary-container" : "text-secondary opacity-40")">@(Model.Activo ? "Activo" : "Inactivo")</span>
+                        <input type="checkbox" asp-for="Activo" class="hidden" id="activo-check" />
+                        <label for="activo-check" class="w-12 h-6 @(Model.Activo ? "bg-primary-container" : "bg-surface-container") rounded-full soft-recessed relative cursor-pointer transition-colors">
+                            <div class="absolute top-1 left-1 w-4 h-4 bg-white rounded-full soft-raised transition-transform @(Model.Activo ? "translate-x-6" : "translate-x-0")"></div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ PERMISOS DEL SISTEMA ═══ -->
+            <div class="pt-4 border-t border-primary-container/5">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-sm font-black text-primary-container uppercase tracking-widest">Permisos del Sistema</h3>
+                        <p class="text-[10px] font-medium text-secondary opacity-50 mt-1">Activa o desactiva módulos específicos para este usuario.</p>
+                    </div>
+                    <button type="button" id="toggleAllBtn" onclick="toggleAllPermisos()" class="text-[10px] font-black text-primary-container uppercase tracking-widest bg-surface soft-raised-sm px-4 py-2 rounded-xl hover:soft-recessed-sm transition-all">
+                        Seleccionar Todos
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Gestión de Clientes</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirGestionClientes" class="permiso-check" id="PermitirGestionClientes">
+                            <label for="PermitirGestionClientes"></label>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Gestión de Préstamos</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirGestionPrestamos" class="permiso-check" id="PermitirGestionPrestamos">
+                            <label for="PermitirGestionPrestamos"></label>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Registro de Gastos</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirRegistroGastos" class="permiso-check" id="PermitirRegistroGastos">
+                            <label for="PermitirRegistroGastos"></label>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Registro de Pagos</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirRegistroPagos" class="permiso-check" id="PermitirRegistroPagos">
+                            <label for="PermitirRegistroPagos"></label>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Enviar Recordatorios / Comprobantes</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirEnviarNotificaciones" class="permiso-check" id="PermitirEnviarNotificaciones">
+                            <label for="PermitirEnviarNotificaciones"></label>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Ver Reportes</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirVerReportes" class="permiso-check" id="PermitirVerReportes">
+                            <label for="PermitirVerReportes"></label>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Ver Auditoría</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirVerAuditoria" class="permiso-check" id="PermitirVerAuditoria">
+                            <label for="PermitirVerAuditoria"></label>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Gestión de Personal</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirGestionPersonal" class="permiso-check" id="PermitirGestionPersonal">
+                            <label for="PermitirGestionPersonal"></label>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Configurar WhatsApp API</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirConfigWhatsApp" class="permiso-check" id="PermitirConfigWhatsApp">
+                            <label for="PermitirConfigWhatsApp"></label>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Configurar Correo SMTP</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirConfigCorreo" class="permiso-check" id="PermitirConfigCorreo">
+                            <label for="PermitirConfigCorreo"></label>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface rounded-2xl soft-recessed-sm p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-primary-container">Papelera de Reciclaje</span>
+                        <div class="soft-switch">
+                            <input type="checkbox" asp-for="PermitirPapelera" class="permiso-check" id="PermitirPapelera">
+                            <label for="PermitirPapelera"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-6 flex flex-col-reverse sm:flex-row gap-4">
+                <a href="@Url.Action("Personal", "Admin")" class="flex-1 text-center py-4 rounded-2xl font-black text-xs text-secondary opacity-60 hover:opacity-100 transition-opacity uppercase tracking-widest">
+                    Cancelar
+                </a>
+                <button type="submit" class="flex-1 bg-primary-container text-white py-4 rounded-2xl font-black text-xs soft-raised hover:soft-recessed transition-all uppercase tracking-widest">
+                    Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('activo-check').addEventListener('change', function() {
+            const dot = this.nextElementSibling.querySelector('div');
+            const label = this.nextElementSibling;
+            if (this.checked) {
+                dot.classList.replace('translate-x-0', 'translate-x-6');
+                label.classList.replace('bg-surface-container', 'bg-primary-container');
+            } else {
+                dot.classList.replace('translate-x-6', 'translate-x-0');
+                label.classList.replace('bg-primary-container', 'bg-surface-container');
+            }
+        });
+
+        function toggleAllPermisos() {
+            const checks = document.querySelectorAll('.permiso-check');
+            const allChecked = [...checks].every(c => c.checked);
+            const btn = document.getElementById('toggleAllBtn');
+
+            checks.forEach(c => {
+                c.checked = !allChecked;
+            });
+
+            btn.textContent = allChecked ? 'Seleccionar Todos' : 'Deseleccionar Todos';
+        }
+
+        // Update button text on individual toggle
+        document.querySelectorAll('.permiso-check').forEach(c => {
+            c.addEventListener('change', () => {
+                const checks = document.querySelectorAll('.permiso-check');
+                const allChecked = [...checks].every(ch => ch.checked);
+                document.getElementById('toggleAllBtn').textContent = allChecked ? 'Deseleccionar Todos' : 'Seleccionar Todos';
+            });
+        });
+
+        // Set initial button text
+        (function() {
+            const checks = document.querySelectorAll('.permiso-check');
+            const allChecked = [...checks].every(c => c.checked);
+            document.getElementById('toggleAllBtn').textContent = allChecked ? 'Deseleccionar Todos' : 'Seleccionar Todos';
+        })();
+    </script>
+}

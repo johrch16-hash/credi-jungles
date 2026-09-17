@@ -1,0 +1,182 @@
+@model IEnumerable<PrestamosCobros.DAL.Entities.SoporteTicket>
+@{
+    ViewData["Title"] = "Bandeja de Soporte Técnico";
+    bool esMaster = (bool)(ViewData["EsMaster"] ?? false);
+    string estadoFiltro = (ViewData["EstadoFiltro"]?.ToString()) ?? "Todos";
+}
+
+<div class="space-y-8 pb-12">
+    <!-- Encabezado -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 bg-primary-container text-white rounded-2xl flex items-center justify-center soft-raised-sm">
+                <span class="material-symbols-outlined text-3xl">support_agent</span>
+            </div>
+            <div>
+                <h2 class="text-3xl font-black text-primary-container tracking-tighter">
+                    @(esMaster ? "Bandeja de Soporte (Master)" : "Soporte Técnico")
+                </h2>
+                <p class="text-xs font-bold text-secondary uppercase tracking-widest opacity-60">
+                    @(esMaster ? "Gestión global de tickets reportados por Administradores" : "Historial y reportes de ayuda enviada")
+                </p>
+            </div>
+        </div>
+
+        <a href="@Url.Action("Nuevo", "Soporte")" class="soft-button soft-button-primary !py-3 !px-6 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02] transition-transform">
+            <span class="material-symbols-outlined text-lg">add_comment</span>
+            <span>Nuevo Ticket</span>
+        </a>
+    </div>
+
+    <!-- Alertas Flash -->
+    @if (ViewBag.SuccessMessage != null || TempData["SuccessMessage"] != null)
+    {
+        <div class="p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 rounded-2xl flex items-center gap-3 text-sm font-bold animate-fade-in">
+            <span class="material-symbols-outlined text-emerald-600">check_circle</span>
+            <span>@(ViewBag.SuccessMessage ?? TempData["SuccessMessage"])</span>
+        </div>
+    }
+    @if (ViewBag.ErrorMessage != null || TempData["ErrorMessage"] != null)
+    {
+        <div class="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-700 rounded-2xl flex items-center gap-3 text-sm font-bold animate-fade-in">
+            <span class="material-symbols-outlined text-rose-600">error</span>
+            <span>@(ViewBag.ErrorMessage ?? TempData["ErrorMessage"])</span>
+        </div>
+    }
+
+    <!-- KPI Cards (Métricas) -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="soft-card p-5 border-l-4 border-slate-700">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-black uppercase tracking-widest text-secondary opacity-60">Total Tickets</span>
+                <span class="material-symbols-outlined text-slate-500">confirmation_number</span>
+            </div>
+            <p class="text-2xl font-black text-primary-container mt-2">@ViewBag.TotalTickets</p>
+        </div>
+
+        <div class="soft-card p-5 border-l-4 border-amber-500">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-black uppercase tracking-widest text-amber-600">Pendientes</span>
+                <span class="material-symbols-outlined text-amber-500">pending_actions</span>
+            </div>
+            <p class="text-2xl font-black text-amber-600 mt-2">@ViewBag.Pendientes</p>
+        </div>
+
+        <div class="soft-card p-5 border-l-4 border-blue-500">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-black uppercase tracking-widest text-blue-600">En Proceso</span>
+                <span class="material-symbols-outlined text-blue-500">hourglass_top</span>
+            </div>
+            <p class="text-2xl font-black text-blue-600 mt-2">@ViewBag.EnProceso</p>
+        </div>
+
+        <div class="soft-card p-5 border-l-4 border-emerald-500">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-black uppercase tracking-widest text-emerald-600">Resueltos</span>
+                <span class="material-symbols-outlined text-emerald-500">task_alt</span>
+            </div>
+            <p class="text-2xl font-black text-emerald-600 mt-2">@ViewBag.Resueltos</p>
+        </div>
+    </div>
+
+    <!-- Filtros de Estado -->
+    <div class="flex flex-wrap items-center gap-2 border-b border-slate-200/60 pb-3">
+        @{
+            string GetFilterClass(string estado) => estadoFiltro == estado 
+                ? "bg-primary-container text-white shadow-md font-black" 
+                : "bg-surface hover:bg-slate-200/60 text-secondary font-bold";
+        }
+        <a href="@Url.Action("Index", "Soporte", new { estado = "Todos" })" class="px-4 py-2 rounded-xl text-xs uppercase tracking-wider transition-all @GetFilterClass("Todos")">
+            Todos (@ViewBag.TotalTickets)
+        </a>
+        <a href="@Url.Action("Index", "Soporte", new { estado = "Pendiente" })" class="px-4 py-2 rounded-xl text-xs uppercase tracking-wider transition-all @GetFilterClass("Pendiente")">
+            Pendientes (@ViewBag.Pendientes)
+        </a>
+        <a href="@Url.Action("Index", "Soporte", new { estado = "En Proceso" })" class="px-4 py-2 rounded-xl text-xs uppercase tracking-wider transition-all @GetFilterClass("En Proceso")">
+            En Proceso (@ViewBag.EnProceso)
+        </a>
+        <a href="@Url.Action("Index", "Soporte", new { estado = "Resuelto" })" class="px-4 py-2 rounded-xl text-xs uppercase tracking-wider transition-all @GetFilterClass("Resuelto")">
+            Resueltos (@ViewBag.Resueltos)
+        </a>
+    </div>
+
+    <!-- Lista de Tickets -->
+    @if (!Model.Any())
+    {
+        <div class="soft-card p-12 text-center">
+            <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="material-symbols-outlined text-4xl">inbox</span>
+            </div>
+            <h3 class="text-lg font-black text-primary-container">No hay tickets registrados</h3>
+            <p class="text-xs font-medium text-secondary opacity-60 mt-1">No se encontraron solicitudes con el filtro seleccionado.</p>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 gap-4">
+            @foreach (var ticket in Model)
+            {
+                string badgeBg = ticket.Estado switch {
+                    "Pendiente" => "bg-amber-100 text-amber-700 border-amber-300",
+                    "En Proceso" => "bg-blue-100 text-blue-700 border-blue-300",
+                    "Resuelto" => "bg-emerald-100 text-emerald-700 border-emerald-300",
+                    _ => "bg-slate-100 text-slate-700 border-slate-300"
+                };
+
+                <div class="soft-card p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-xl transition-all border-l-4 @(ticket.Estado == "Pendiente" ? "border-amber-500" : ticket.Estado == "En Proceso" ? "border-blue-500" : "border-emerald-500")">
+                    <div class="space-y-2 flex-1">
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <span class="px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-full border @badgeBg">
+                                @ticket.Estado
+                            </span>
+                            <span class="text-xs font-bold text-secondary opacity-60">
+                                Ticket #@ticket.SoporteTicketId • @ticket.FechaCreacion.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")
+                            </span>
+                            @if (!string.IsNullOrEmpty(ticket.ImagenUrl))
+                            {
+                                <span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-md flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-xs">image</span> Adjunto
+                                </span>
+                            }
+                        </div>
+
+                        <h3 class="text-lg font-black text-primary-container tracking-tight">
+                            @ticket.Titulo
+                        </h3>
+
+                        <p class="text-xs font-medium text-secondary line-clamp-2 leading-relaxed">
+                            @ticket.Mensaje
+                        </p>
+
+                        <div class="flex items-center gap-2 pt-2 text-xs font-bold text-slate-500">
+                            <span class="material-symbols-outlined text-sm">person</span>
+                            <span>@ticket.NombreUsuario</span>
+                            @if (!string.IsNullOrEmpty(ticket.EmailUsuario))
+                            {
+                                <span class="opacity-60">(@ticket.EmailUsuario)</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 pt-4 md:pt-0 border-t md:border-t-0 border-slate-100 justify-end">
+                        <a href="@Url.Action("Detalle", "Soporte", new { id = ticket.SoporteTicketId })" class="soft-button soft-button-primary !py-2.5 !px-5 text-xs font-black uppercase tracking-wider flex items-center gap-2">
+                            <span>Ver Detalle</span>
+                            <span class="material-symbols-outlined text-base">arrow_forward</span>
+                        </a>
+
+                        @if (esMaster)
+                        {
+                            <form asp-action="Eliminar" asp-controller="Soporte" method="post" onsubmit="return confirm('¿Está seguro de eliminar este ticket?');" class="inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@ticket.SoporteTicketId" />
+                                <button type="submit" class="w-9 h-9 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center hover:bg-rose-100 transition-colors" title="Eliminar Ticket">
+                                    <span class="material-symbols-outlined text-lg">delete</span>
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
